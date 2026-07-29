@@ -10,11 +10,15 @@ Tower.wave = {
   WAVE_DURATION: 26000,     // 26秒
   TICKS_PER_SEC: 8,
 
-  /** Spawn Rate 随波次增长 */
+  /** Spawn Rate per wave — gentle ramp for early game */
   getSpawnRate: function (wave) {
-    // Wave 1: 15%, 每波+1%, 上限56%
-    var rate = 0.14 + wave * 0.01;
-    return Math.min(0.56, Math.max(0.10, rate));
+    // Wave 1→10: ~5%→18%, then +1%/wave up to 56% cap
+    if (wave <= 10) {
+      var rate = 0.04 + wave * 0.014;
+      return Math.max(0.05, rate);
+    }
+    var rate = 0.18 + (wave - 10) * 0.01;
+    return Math.min(0.56, rate);
   },
 
   /** 理论生成总数 */

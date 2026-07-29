@@ -45,9 +45,9 @@ Tower.enemy = {
     }
   },
 
-  /** 基础 HP 公式: 3 + wave × 3 — Wave1=6, Wave5=18, Wave10=33 */
+  /** Base HP: 1 + wave × 2 — Wave1=3, Wave5=11, Wave10=21 */
   baseHP: function (wave) {
-    return 3 + wave * 3;
+    return 1 + wave * 2;
   },
 
   /** 创建一个敌人实例 */
@@ -111,19 +111,19 @@ Tower.enemy = {
   getWaveComposition: function (wave) {
     var comp = [];
 
-    // Boss 每 10 波
+    // Boss every 10 waves
     if (wave % 10 === 0) {
       comp.push({ type: 'boss', count: 1 });
     }
 
-    // Fast 从第 5 波开始
-    if (wave >= 5) {
-      comp.push({ type: 'fast', count: Math.floor(wave * 0.4) });
+    // Fast from wave 6, but only a few
+    if (wave >= 6) {
+      comp.push({ type: 'fast', count: Math.floor((wave - 5) * 0.5) });
     }
 
-    // Tank 从第 8 波开始
-    if (wave >= 8) {
-      comp.push({ type: 'tank', count: Math.floor(wave * 0.3) });
+    // Tank from wave 10
+    if (wave >= 10) {
+      comp.push({ type: 'tank', count: Math.floor((wave - 9) * 0.5) });
     }
 
     return comp;
