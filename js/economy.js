@@ -5,10 +5,12 @@ window.Tower = window.Tower || {};
 
 Tower.economy = {
 
-  /** 击杀敌人获得 Cash */
+  /** 击杀敌人获得 Cash (× workshop Cash Bonus) */
   earnCash: function (state, enemy) {
-    state.cash += enemy.cash;
-    return enemy.cash;
+    var bonus = Tower.tower.getStats(state).cashBonus || 1.0;
+    var earned = Math.floor(enemy.cash * bonus);
+    state.cash += earned;
+    return earned;
   },
 
   /** 波次完成获得 Coins */

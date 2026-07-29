@@ -87,6 +87,11 @@ Tower.loop = {
     var towerPos = Tower.tower.position(size.w, size.h);
     var stats = Tower.tower.getStats(state);
 
+    // Health regen
+    if (stats.healthRegen > 0) {
+      state.towerHP = Math.min(state.towerMaxHP, state.towerHP + stats.healthRegen * dt);
+    }
+
     // ── 1. 敌人生成 ──
     if (now - self._lastSpawnTime >= Tower.wave.SPAWN_INTERVAL) {
       self._lastSpawnTime = now;

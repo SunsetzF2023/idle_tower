@@ -14,29 +14,24 @@ Tower.game = {
       _current: 'idle',
       _leftTab: 'ingame',
 
-      // Tower HP
+      // Tower HP (runtime)
       towerHP: 100,
       towerMaxHP: 100,
 
-      // In-game levels
+      // In-game upgrade levels
       damageLevel: 0,
       speedLevel: 0,
       rangeLevel: 0,
-      hpLevel: 0,
-      critLevel: 0,
-      critFactorLevel: 0,
-      multishotLevel: 0,
-      cashWaveLevel: 0,
 
       _flashTimer: 0,
+      _regenTimer: 0,
 
       // Resources
       cash: 0,
       coins: save.coins || 0,
 
-      // Workshop
-      workshop: save.workshop || { damage: 0, speed: 0, range: 0, cash: 0 },
-      unlocks: save.unlocks || {},
+      // Workshop levels (permanent)
+      workshop: save.workshop || {},
 
       // Wave
       wave: 1,
@@ -54,6 +49,10 @@ Tower.game = {
       damageNumbers: []
     };
 
+    // Apply workshop health
+    var wsHp = Tower.tower.getStats(state).maxHp;
+    state.towerMaxHP = wsHp;
+    state.towerHP = wsHp;
     state.cash = Tower.tower.startingCash(state);
 
     this.state = state;
@@ -68,8 +67,7 @@ Tower.game = {
       totalKills: state.totalKills,
       killsByType: state.killsByType,
       coins: state.coins,
-      workshop: state.workshop,
-      unlocks: state.unlocks
+      workshop: state.workshop
     });
   },
 
@@ -83,30 +81,43 @@ Tower.game = {
     if (tab === 'workshop') Tower.panels.renderWorkshop(state);
   },
 
-  /** Buy permanent workshop bonus */
-  buyWorkshop: function (key) {
+  /** Buy/upgrade workshop stat (handles unlock cost + level cost) */
+  wsBuy: function (key) {
     var state = this.state;
     var ws = state.workshop;
-    var def = Tower.tower.WORKSHOP[key];
+    var item = null;
+    var wsDef = Tower.tower.WORKSHOP;
+    for (var s in wsDef) {
+      if (wsDef[s].items && wsDef[s].items[key]) {
+        item = wsDef[s].items[key];
+        break;
+      }
+    }
+    if (!item) return;
+
     var lv = ws[key] || 0;
-    if (lv >= def.max) return;
-    var cost = Tower.tower.workshopCost(key, lv);
+    if (item.maxLv && lv >= item.maxLv) return;
+
+    // Unlock check: one-time coin cost before first level
+    if (lv === 0 && item.unlock > 0) {
+      if (state.coins < item.unlock) return;
+      state.coins -= item.unlock;
+    }
+
+    // Level cost
+    var cost = Tower.tower.wsCost(item, lv);
     if (state.coins < cost) return;
     state.coins -= cost;
     ws[key] = lv + 1;
-    this._save(state);
-    Tower.panels.renderWorkshop(state);
-    Tower.panels.updateLeft(state);
-  },
 
-  /** Buy one-time unlock */
-  buyUnlock: function (key) {
-    var state = this.state;
-    if (state.unlocks[key]) return;
-    var def = Tower.tower.UNLOCKS[key];
-    if (state.coins < def.cost) return;
-    state.coins -= def.cost;
-    state.unlocks[key] = true;
+    // Apply HP change immediately
+    if (key === 'health') {
+      var newMax = Tower.tower.getStats(state).maxHp;
+      var diff = newMax - state.towerMaxHP;
+      state.towerMaxHP = newMax;
+      state.towerHP += diff;
+    }
+
     this._save(state);
     Tower.panels.refreshAll(state);
   },
@@ -114,7 +125,7 @@ Tower.game = {
   nextWave: function () {
     var state = this.state;
     if (state._current !== 'idle') return;
-    // Cash per wave
+
     var cpw = Tower.tower.getStats(state).cashPerWave;
     if (cpw > 0) state.cash += cpw;
 
@@ -129,27 +140,16 @@ Tower.game = {
     Tower.panels.refreshAll(state);
   },
 
-  upgrade: function (stat) {
+  ingameUpgrade: function (stat) {
     var state = this.state;
     if (state._current !== 'idle') return;
-
-    var levelKey = stat + 'Level';
-    if (state[levelKey] === undefined) return;
-
-    var info = Tower.tower.upgradeInfo(stat, state[levelKey]);
-    if (info.maxed) return;
+    var lk = stat + 'Level';
+    if (state[lk] === undefined) return;
+    var info = Tower.tower.ingameInfo(stat, state[lk]);
+    if (!info) return;
     if (!Tower.economy.canAfford(state, info.cost)) return;
-
     Tower.economy.spendCash(state, info.cost);
-    state[levelKey]++;
-
-    // If upgrading HP, apply to tower
-    if (stat === 'hp') {
-      var hpInfo = Tower.tower.upgradeInfo('hp', state.hpLevel);
-      state.towerMaxHP = hpInfo.value;
-      state.towerHP = Math.min(state.towerHP + Tower.tower.UPGRADES.hp.perLv, state.towerMaxHP);
-    }
-
+    state[lk]++;
     Tower.panels.refreshAll(state);
   },
 
@@ -166,15 +166,9 @@ Tower.game = {
     this._save(state);
 
     state._current = 'idle';
-    state.towerHP = state.towerMaxHP;
     state.damageLevel = 0;
     state.speedLevel = 0;
     state.rangeLevel = 0;
-    state.hpLevel = 0;
-    state.critLevel = 0;
-    state.critFactorLevel = 0;
-    state.multishotLevel = 0;
-    state.cashWaveLevel = 0;
     state.cash = Tower.tower.startingCash(state);
     state.wave = 1;
     state.waveKills = 0;
@@ -183,6 +177,10 @@ Tower.game = {
     state.particles = [];
     state.damageNumbers = [];
     state._flashTimer = 0;
+
+    var wsHp = Tower.tower.getStats(state).maxHp;
+    state.towerMaxHP = wsHp;
+    state.towerHP = wsHp;
 
     Tower.panels.hideGameOver();
     Tower.panels.refreshAll(state);

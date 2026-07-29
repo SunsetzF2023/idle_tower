@@ -36,8 +36,7 @@ Tower.storage = {
       totalKills: 0,
       killsByType: { basic: 0, fast: 0, tank: 0, boss: 0 },
       coins: 0,
-      workshop: { damage: 0, speed: 0, range: 0, cash: 0 },
-      unlocks: {}
+      workshop: {}
     };
   }
 };
