@@ -45,9 +45,9 @@ Tower.enemy = {
     }
   },
 
-  /** 基础 HP 公式: 10 + wave × 5 */
+  /** 基础 HP 公式: 3 + wave × 3 — Wave1=6, Wave5=18, Wave10=33 */
   baseHP: function (wave) {
-    return 10 + wave * 5;
+    return 3 + wave * 3;
   },
 
   /** 创建一个敌人实例 */
@@ -76,17 +76,23 @@ Tower.enemy = {
     };
   },
 
-  /** 移动敌人向塔一步，返回是否到达塔 */
-  move: function (enemy, towerX, towerY, dt) {
+  /** 移动敌人向塔一步，检测敌人边缘碰到塔边缘 */
+  move: function (enemy, towerX, towerY, collisionRadius, dt) {
     if (!enemy.alive) return false;
-    var result = Tower.utils.moveToward(enemy.x, enemy.y, towerX, towerY, enemy.speed * dt);
-    enemy.x = result.x;
-    enemy.y = result.y;
-    if (result.arrived) {
+    // 敌人碰撞距离 = 敌人半径 + 塔碰撞半径
+    var hitDist = enemy.radius + collisionRadius;
+    var dist = Tower.utils.dist(enemy.x, enemy.y, towerX, towerY);
+    // 边缘碰到边缘 → 碰撞
+    if (dist <= hitDist + enemy.speed * dt) {
+      enemy.x = towerX + (enemy.x - towerX) * (hitDist / Math.max(dist, 0.001));
+      enemy.y = towerY + (enemy.y - towerY) * (hitDist / Math.max(dist, 0.001));
       enemy.reachedTower = true;
       enemy.alive = false;
       return true;
     }
+    var result = Tower.utils.moveToward(enemy.x, enemy.y, towerX, towerY, enemy.speed * dt);
+    enemy.x = result.x;
+    enemy.y = result.y;
     return false;
   },
 

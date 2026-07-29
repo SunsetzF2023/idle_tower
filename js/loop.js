@@ -95,11 +95,12 @@ Tower.loop = {
     for (var i = state.enemies.length - 1; i >= 0; i--) {
       var enemy = state.enemies[i];
       if (!enemy.alive) continue;
-      var hit = Tower.enemy.move(enemy, towerPos.x, towerPos.y, dt);
+      var hit = Tower.enemy.move(enemy, towerPos.x, towerPos.y, stats.collisionRadius, dt);
       if (hit) {
-        // 碰撞 → 塔受伤
+        // 碰撞 → 塔受伤 + 敌人爆散粒子
         var hitResult = Tower.combat.enemyHitTower(state, enemy);
-        Tower.combat.spawnDamageNumber(state, towerPos.x, towerPos.y - 10, '-' + hitResult.damage, '#f7768e');
+        Tower.combat.spawnParticles(state, enemy);
+        Tower.combat.spawnDamageNumber(state, enemy.x, enemy.y, '-' + hitResult.damage, '#f7768e');
         state._flashTimer = 1;
         if (hitResult.dead) {
           state._current = 'game_over';
