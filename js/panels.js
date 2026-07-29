@@ -1,11 +1,11 @@
 /* ═══════════════════════════════════════════════
-   panels.js — 左右面板 DOM 更新
+   panels.js — left/right panel DOM updates
    ═══════════════════════════════════════════════ */
 window.Tower = window.Tower || {};
 
 Tower.panels = {
 
-  /** 更新左侧面板：塔状态 + 统计 */
+  /** Update left panel: tower status + stats */
   updateLeft: function (state) {
     var stats = Tower.tower.getStats(state);
     document.getElementById('s-hp').textContent = state.towerHP;
@@ -22,49 +22,59 @@ Tower.panels = {
     document.getElementById('s-boss').textContent = state.killsByType.boss;
   },
 
-  /** 更新右侧面板：升级按钮 */
-  updateUpgrades: function (state) {
-    var di = Tower.tower.damageInfo(state.damageLevel);
-    var si = Tower.tower.speedInfo(state.speedLevel);
-    var ri = Tower.tower.rangeInfo(state.rangeLevel);
+  /** Render right-panel upgrade rows dynamically */
+  renderUpgrades: function (state) {
+    var defs = Tower.tower.UPGRADES;
+    var unlocks = state.unlocks || {};
+    var html = '';
+    var anyLocked = false;
 
-    // Damage
-    document.getElementById('u-dmg-lv').textContent = di.level;
-    document.getElementById('u-dmg-next').textContent = di.next;
-    document.getElementById('u-dmg-cost').textContent = di.cost;
-    document.getElementById('u-dmg-btn').disabled = !Tower.economy.canAfford(state, di.cost);
+    var order = ['damage', 'speed', 'range', 'hp', 'crit', 'critFactor', 'multishot', 'cashWave'];
+    for (var i = 0; i < order.length; i++) {
+      var key = order[i];
+      var def = defs[key];
+      if (!def) continue;
 
-    // Speed
-    document.getElementById('u-spd-lv').textContent = si.level;
-    document.getElementById('u-spd-next').textContent = si.next.toFixed(2) + '/s';
-    document.getElementById('u-spd-cost').textContent = si.cost;
-    document.getElementById('u-spd-btn').disabled = !Tower.economy.canAfford(state, si.cost);
+      // Visibility check
+      if (def.visible === 'unlocked') {
+        if (!unlocks[def.unlockKey]) { anyLocked = true; continue; }
+      }
 
-    // Range
-    document.getElementById('u-rng-lv').textContent = ri.level;
-    document.getElementById('u-rng-next').textContent = ri.next;
-    document.getElementById('u-rng-cost').textContent = ri.cost;
-    document.getElementById('u-rng-btn').disabled = !Tower.economy.canAfford(state, ri.cost);
+      var lv = state[key + 'Level'] || 0;
+      var info = Tower.tower.upgradeInfo(key, lv);
+      var canBuy = !info.maxed && Tower.economy.canAfford(state, info.cost);
+      var maxed = info.maxed;
+      var nextStr = def.format(info.next);
+      var costStr = maxed ? 'MAX' : info.cost + ' 💵';
 
-    // 波次按钮
-    var waveBtn = document.getElementById('wave-btn');
-    waveBtn.disabled = state._current !== 'idle';
-    waveBtn.textContent = state._current === 'idle' ? '▶ next wave' : '...fighting...';
+      html += '<div class="upgrade-row">'
+        + '<div class="upgrade-info">'
+        + '<div class="upgrade-name">' + def.icon + ' ' + def.name + '</div>'
+        + '<div class="upgrade-stat">' + def.format(info.value) + ' → ' + nextStr + '</div>'
+        + '<div class="upgrade-cost">cost ' + costStr + '</div>'
+        + '</div>'
+        + '<button class="upgrade-btn" onclick="Tower.game.upgrade(\'' + key + '\')"'
+        + ((canBuy && state._current === 'idle') ? '' : ' disabled') + '>'
+        + (maxed ? 'MAX' : 'Lv.' + lv) + '</button>'
+        + '</div>';
+    }
+
+    document.getElementById('ug-container').innerHTML = html;
+    document.getElementById('ug-locked').style.display = anyLocked ? 'block' : 'none';
   },
 
-  /** 更新波次信息 */
+  /** Update wave info */
   updateWave: function (state) {
     document.getElementById('s-wave').textContent = state.wave;
     var left = state.enemies.filter(function (e) { return e.alive; }).length;
     document.getElementById('s-left').textContent = left;
   },
 
-  /** 显示/隐藏 Game Over 覆盖层 */
+  /** Show game over overlay with coin bonus */
   showGameOver: function (state, coinBonus) {
     document.getElementById('game-over-overlay').classList.add('show');
     document.getElementById('go-wave').textContent = state.wave;
     document.getElementById('go-kills').textContent = state.totalKills;
-    // 动态添加 coins 结算信息
     var existing = document.getElementById('go-coins');
     if (!existing) {
       var div = document.createElement('div');
@@ -82,23 +92,18 @@ Tower.panels = {
     document.getElementById('game-over-overlay').classList.remove('show');
   },
 
-  /** 刷新全部面板 */
-  refreshAll: function (state) {
-    this.updateLeft(state);
-    this.updateUpgrades(state);
-    this.updateWave(state);
-    this.renderWorkshop(state);
-  },
-
-  /** 渲染局外属性面板 */
+  /** Render workshop panel — permanent bonuses + unlocks */
   renderWorkshop: function (state) {
     var ws = state.workshop || {};
-    var defs = Tower.tower.WORKSHOP;
+    var ul = state.unlocks || {};
     var html = '';
+
+    // Section: Permanent Bonuses
+    html += '<div style="font-size:10px;color:var(--text);opacity:0.5;margin-bottom:6px">─ Permanent Bonuses ─</div>';
     var keys = ['damage', 'speed', 'range', 'cash'];
     for (var i = 0; i < keys.length; i++) {
       var k = keys[i];
-      var d = defs[k];
+      var d = Tower.tower.WORKSHOP[k];
       var lv = ws[k] || 0;
       var cost = Tower.tower.workshopCost(k, lv);
       var maxed = lv >= d.max;
@@ -110,7 +115,7 @@ Tower.panels = {
       else bonus = '+' + (lv * d.perLv) + ' cash';
 
       html += '<div class="ws-row">'
-        + '<div class="ws-name">' + d.icon + ' ' + d.name + ' <span style="font-size:9px;opacity:0.5">Lv.' + lv + '</span></div>'
+        + '<div class="ws-name">' + d.icon + ' ' + d.name + ' <span style="font-size:9px;opacity:0.5">Lv.' + lv + '/' + d.max + '</span></div>'
         + '<div class="ws-desc">' + d.desc + ' (' + bonus + ')</div>'
         + '<div class="ws-bottom">'
         + '<span class="ws-cost">' + (maxed ? 'MAX' : '🪙 ' + cost) + '</span>'
@@ -119,6 +124,34 @@ Tower.panels = {
         + (maxed ? 'MAX' : 'upgrade') + '</button>'
         + '</div></div>';
     }
+
+    // Section: Unlocks
+    html += '<div style="font-size:10px;color:var(--text);opacity:0.5;margin:10px 0 6px">─ Unlocks (one-time) ─</div>';
+    var ulKeys = ['health', 'crit', 'multishot', 'cashwave'];
+    for (var j = 0; j < ulKeys.length; j++) {
+      var uk = ulKeys[j];
+      var ud = Tower.tower.UNLOCKS[uk];
+      var owned = ul[uk];
+      html += '<div class="ws-row">'
+        + '<div class="ws-name">' + ud.icon + ' ' + ud.name + '</div>'
+        + '<div class="ws-desc">' + ud.desc + '</div>'
+        + '<div class="ws-bottom">'
+        + (owned
+          ? '<span style="font-size:9px;color:var(--green)">✅ unlocked</span>'
+          : '<span class="ws-cost">🪙 ' + ud.cost + '</span>'
+          + '<button class="ws-btn" onclick="Tower.game.buyUnlock(\'' + uk + '\')"'
+          + (state.coins >= ud.cost ? '' : ' disabled') + '>buy</button>')
+        + '</div></div>';
+    }
+
     document.getElementById('ws-upgrades').innerHTML = html;
+  },
+
+  /** Refresh all panels */
+  refreshAll: function (state) {
+    this.updateLeft(state);
+    this.renderUpgrades(state);
+    this.updateWave(state);
+    this.renderWorkshop(state);
   }
 };

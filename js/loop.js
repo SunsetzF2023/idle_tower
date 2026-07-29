@@ -74,7 +74,9 @@ Tower.loop = {
     Tower.panels.updateWave(state);
     // 每秒更新升级面板就够了（避免刷太频繁）
     if (!state._lastPanelUpdate || now - state._lastPanelUpdate > 500) {
-      Tower.panels.updateUpgrades(state);
+      Tower.panels.renderUpgrades(state);
+      document.getElementById('wave-btn').textContent = state._current === 'idle' ? '▶ next wave' : '...fighting...';
+      document.getElementById('wave-btn').disabled = state._current !== 'idle';
       state._lastPanelUpdate = now;
     }
   },
@@ -126,9 +128,8 @@ Tower.loop = {
 
     if (target && now - self._lastAttackTime >= stats.attackInterval) {
       self._lastAttackTime = now;
-      // 发射子弹
-      var bullet = Tower.bullet.create(towerPos.x, towerPos.y, target);
-      state.bullets.push(bullet);
+      // 发射子弹（可能有双发）
+      self._fireBullets(state, towerPos, target, stats);
     }
 
     // ── 4. 子弹飞行 + 命中 ──
@@ -145,8 +146,18 @@ Tower.loop = {
           }
         }
         if (targetEnemy) {
-          var result = Tower.combat.towerAttack(state, targetEnemy);
-          Tower.combat.spawnDamageNumber(state, targetEnemy.x, targetEnemy.y - targetEnemy.radius, '-' + result.damage, '#c0caf5');
+          var stats2 = Tower.tower.getStats(state);
+          var rawDmg = stats2.damage;
+          var isCrit = Tower.utils.chance(stats2.critChance / 100);
+          var dmg = isCrit ? Math.floor(rawDmg * stats2.critFactor) : rawDmg;
+          Tower.enemy.takeDamage(targetEnemy, dmg);
+          var dmgColor = isCrit ? '#ff9e64' : '#c0caf5';
+          var dmgText = (isCrit ? '💥 ' : '') + dmg;
+          Tower.combat.spawnDamageNumber(state, targetEnemy.x, targetEnemy.y - targetEnemy.radius, dmgText, dmgColor);
+          if (targetEnemy.hp <= 0) {
+            targetEnemy.alive = false;
+            self._onEnemyKilled(state, targetEnemy);
+          }
           if (result.killed) {
             self._onEnemyKilled(state, targetEnemy);
           }
@@ -187,6 +198,26 @@ Tower.loop = {
     var enemy = Tower.enemy.create(enemyType, state.wave, size.w, size.h);
     state.enemies.push(enemy);
     self._spawnCount++;
+  },
+
+  /** Fire bullets — handles multishot (up to 2 targets) and crit */
+  _fireBullets: function (state, towerPos, primaryTarget, stats) {
+    // Primary bullet
+    state.bullets.push(Tower.bullet.create(towerPos.x, towerPos.y, primaryTarget));
+    // Multishot: fire at a second target
+    if (Tower.utils.chance(stats.multishotChance / 100)) {
+      var second = null;
+      var range = stats.range;
+      for (var i = 0; i < state.enemies.length; i++) {
+        var e = state.enemies[i];
+        if (!e.alive || e.id === primaryTarget.id) continue;
+        var d = Tower.utils.dist(towerPos.x, towerPos.y, e.x, e.y);
+        if (d <= range) { second = e; break; }
+      }
+      if (second) {
+        state.bullets.push(Tower.bullet.create(towerPos.x, towerPos.y, second));
+      }
+    }
   },
 
   _onEnemyKilled: function (state, enemy) {

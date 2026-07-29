@@ -71,29 +71,9 @@
     <div id="right-panel">
       <div class="panel-section">
         <div class="panel-title">UPGRADE</div>
-        <div class="upgrade-row">
-          <div class="upgrade-info">
-            <div class="upgrade-name">damage</div>
-            <div class="upgrade-stat">6 → <span id="u-dmg-next">8</span></div>
-            <div class="upgrade-cost">cost <span id="u-dmg-cost">10</span> cash</div>
-          </div>
-          <button class="upgrade-btn" id="u-dmg-btn" onclick="Tower.game.upgrade('damage')">Lv.<span id="u-dmg-lv">0</span></button>
-        </div>
-        <div class="upgrade-row">
-          <div class="upgrade-info">
-            <div class="upgrade-name">speed</div>
-            <div class="upgrade-stat">1.0/s → <span id="u-spd-next">1.05/s</span></div>
-            <div class="upgrade-cost">cost <span id="u-spd-cost">10</span> cash</div>
-          </div>
-          <button class="upgrade-btn" id="u-spd-btn" onclick="Tower.game.upgrade('speed')">Lv.<span id="u-spd-lv">0</span></button>
-        </div>
-        <div class="upgrade-row">
-          <div class="upgrade-info">
-            <div class="upgrade-name">range</div>
-            <div class="upgrade-stat">150 → <span id="u-rng-next">155</span></div>
-            <div class="upgrade-cost">cost <span id="u-rng-cost">15</span> cash</div>
-          </div>
-          <button class="upgrade-btn" id="u-rng-btn" onclick="Tower.game.upgrade('range')">Lv.<span id="u-rng-lv">0</span></button>
+        <div id="ug-container"></div>
+        <div id="ug-locked" style="font-size:10px;color:var(--text);opacity:0.4;text-align:center;padding:12px 0;display:none">
+          🔒 unlock more upgrades in<br>WORKSHOP → Unlocks
         </div>
       </div>
       <div class="panel-section">

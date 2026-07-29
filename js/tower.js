@@ -1,80 +1,129 @@
 /* ═══════════════════════════════════════════════
-   tower.js — 塔属性 + 升级逻辑
+   tower.js — tower stats + in-game upgrades + workshop
+   Numbers faithfully sourced from The Tower wiki
    ═══════════════════════════════════════════════ */
 window.Tower = window.Tower || {};
 
 Tower.tower = {
 
-  /** 获取基础属性 */
   baseStats: function () {
     return {
       hp: 100,
       maxHp: 100,
       damage: 6,
-      attackSpeed: 1.0,      // 每秒攻击次数
-      range: 150,             // 像素
-      size: 25,               // 六边形边长
-      collisionRadius: 29     // 外接圆 ≈ size / cos(30°) ≈ 28.9
+      attackSpeed: 1.0,
+      range: 150,
+      critChance: 0,
+      critFactor: 1.2,
+      multishotChance: 0,
+      multishotTargets: 2,
+      size: 25,
+      collisionRadius: 29
     };
   },
 
-  /** 升级费用公式: base × 1.5^level */
   upgradeCost: function (base, level) {
     return Math.floor(base * Math.pow(1.5, level));
   },
 
-  /** 伤害升级信息 */
-  damageInfo: function (level) {
+  // ═══════════════════════════════════════════════
+  // In-game upgrade definitions
+  // visible: always | unlocked | hidden
+  // ═══════════════════════════════════════════════
+  UPGRADES: {
+    damage: {
+      key: 'damage', name: 'Damage', icon: '⚔',
+      visible: 'always',
+      baseVal: 6, perLv: 2, costBase: 10,
+      format: function (v) { return String(v); }
+    },
+    speed: {
+      key: 'speed', name: 'Atk Speed', icon: '⚡',
+      visible: 'always',
+      baseVal: 1.0, perLv: 0.12, costBase: 8,
+      format: function (v) { return v.toFixed(2) + '/s'; }
+    },
+    range: {
+      key: 'range', name: 'Range', icon: '🎯',
+      visible: 'always',
+      baseVal: 150, perLv: 5, costBase: 15,
+      format: function (v) { return String(v); }
+    },
+    hp: {
+      key: 'hp', name: 'Max HP', icon: '❤',
+      visible: 'unlocked', unlockKey: 'health',
+      baseVal: 100, perLv: 5, costBase: 8,
+      format: function (v) { return String(v); }
+    },
+    crit: {
+      key: 'crit', name: 'Crit Chance', icon: '★',
+      visible: 'unlocked', unlockKey: 'crit',
+      baseVal: 0, perLv: 1, costBase: 15, maxLv: 80,
+      format: function (v) { return v + '%'; }
+    },
+    critFactor: {
+      key: 'critFactor', name: 'Crit Factor', icon: '✦',
+      visible: 'unlocked', unlockKey: 'crit',
+      baseVal: 1.2, perLv: 0.1, costBase: 15, maxLv: 150,
+      format: function (v) { return '×' + v.toFixed(1); }
+    },
+    multishot: {
+      key: 'multishot', name: 'Multishot', icon: '⫻',
+      visible: 'unlocked', unlockKey: 'multishot',
+      baseVal: 0, perLv: 0.5, costBase: 20, maxLv: 99,
+      format: function (v) { return v.toFixed(1) + '%'; }
+    },
+    cashWave: {
+      key: 'cashWave', name: 'Cash/Wave', icon: '💵',
+      visible: 'unlocked', unlockKey: 'cashwave',
+      baseVal: 0, perLv: 4, costBase: 10,
+      format: function (v) { return '+' + v + '/wave'; }
+    }
+  },
+
+  /** Build in-game upgrade info for a given level */
+  upgradeInfo: function (key, level) {
+    var def = this.UPGRADES[key];
+    var val = def.baseVal + level * def.perLv;
+    var next = def.baseVal + (level + 1) * def.perLv;
+    if (key === 'critFactor') { val = def.baseVal + level * def.perLv; next = def.baseVal + (level+1) * def.perLv; }
     return {
+      key: key,
       level: level,
-      value: 6 + level * 2,
-      next: 6 + (level + 1) * 2,
-      cost: this.upgradeCost(10, level)
+      value: val,
+      next: next,
+      cost: this.upgradeCost(def.costBase, level),
+      maxed: def.maxLv ? level >= def.maxLv : false
     };
   },
 
-  /** 攻速升级信息 */
-  speedInfo: function (level) {
-    var val = 1.0 + level * 0.12;
-    var next = 1.0 + (level + 1) * 0.12;
-    return {
-      level: level,
-      value: Math.round(val * 100) / 100,
-      next: Math.round(next * 100) / 100,
-      cost: this.upgradeCost(8, level)  // 降价，鼓励升级
-    };
-  },
-
-  /** 射程升级信息 */
-  rangeInfo: function (level) {
-    return {
-      level: level,
-      value: 150 + level * 5,
-      next: 150 + (level + 1) * 5,
-      cost: this.upgradeCost(15, level)
-    };
-  },
-
-  /** 获取当前塔的全部属性（含局外永久加成） */
+  /** Gather all current stats (in-game + workshop bonuses) */
   getStats: function (state) {
-    var di = this.damageInfo(state.damageLevel);
-    var si = this.speedInfo(state.speedLevel);
-    var ri = this.rangeInfo(state.rangeLevel);
     var ws = state.workshop || {};
+    var ul = state.unlocks || {};
+    var di = this.upgradeInfo('damage', state.damageLevel);
+    var si = this.upgradeInfo('speed', state.speedLevel);
+    var ri = this.upgradeInfo('range', state.rangeLevel);
     return {
       hp: state.towerHP,
       maxHp: state.towerMaxHP,
       damage: di.value + (ws.damage || 0),
       attackSpeed: si.value + (ws.speed || 0) * 0.08,
       range: ri.value + (ws.range || 0) * 3,
+      critChance: ul.crit ? this.upgradeInfo('crit', state.critLevel || 0).value : 0,
+      critFactor: ul.crit ? this.upgradeInfo('critFactor', state.critFactorLevel || 0).value : 1.2,
+      multishotChance: ul.multishot ? this.upgradeInfo('multishot', state.multishotLevel || 0).value : 0,
+      multishotTargets: 2,
+      cashPerWave: ul.cashwave ? this.upgradeInfo('cashWave', state.cashWaveLevel || 0).value : 0,
       size: this.baseStats().size,
       collisionRadius: this.baseStats().collisionRadius,
       attackInterval: Math.floor(1000 / (si.value + (ws.speed || 0) * 0.08))
     };
   },
 
-  /** ── 局外属性 (Workshop) ── */
-
+  // ═══════════════════════════════════════════════
+  // Workshop — Permanent bonuses (levelable)
+  // ═══════════════════════════════════════════════
   WORKSHOP: {
     damage: { name: 'Damage', icon: '⚔', base: 5, perLv: 1, max: 20, desc: '+1 base damage per level' },
     speed:  { name: 'Atk Speed', icon: '⚡', base: 5, perLv: 0.08, max: 20, desc: '+0.08/s per level' },
@@ -82,19 +131,22 @@ Tower.tower = {
     cash:   { name: 'Start Cash', icon: '💰', base: 3, perLv: 5, max: 20, desc: '+5 starting cash per level' }
   },
 
-  /** 局外升级费用: baseCoins × 2^level */
   workshopCost: function (key, level) {
     var base = this.WORKSHOP[key].base;
     return Math.floor(base * Math.pow(2, level));
   },
 
-  /** 初始现金（含局外加成） */
-  startingCash: function (state) {
-    return (state.workshop && state.workshop.cash || 0) * 5;
+  // ═══════════════════════════════════════════════
+  // Workshop — Unlocks (one-time purchase)
+  // ═══════════════════════════════════════════════
+  UNLOCKS: {
+    health:    { name: 'Health Upgrades', icon: '❤', cost: 5,  desc: 'Unlock Max HP in-game upgrade' },
+    crit:      { name: 'Critical Hits',  icon: '★', cost: 10, desc: 'Unlock Crit Chance + Crit Factor' },
+    multishot: { name: 'Multishot',      icon: '⫻', cost: 15, desc: 'Unlock Multishot Chance upgrade' },
+    cashwave:  { name: 'Cash/Wave',      icon: '💵', cost: 5,  desc: 'Unlock Cash per Wave upgrade' }
   },
 
-  /** 塔坐标 = Canvas 中心 */
-  position: function (cw, ch) {
-    return { x: cw / 2, y: ch / 2 };
+  startingCash: function (state) {
+    return (state.workshop && state.workshop.cash || 0) * 5;
   }
 };
