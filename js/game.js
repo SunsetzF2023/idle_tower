@@ -50,6 +50,8 @@ Tower.game = {
     state.cash = Tower.tower.startingCash(state);
 
     this.state = state;
+    // Ensure save key exists from the start
+    this._save(state);
     Tower.panels.refreshAll(state);
     Tower.loop.start(state);
   },
