@@ -9,7 +9,7 @@ Tower.enemy = {
   TYPES: {
     basic: {
       name: 'basic',
-      speed: 60,           // 像素/秒
+      speed: 40,           // 像素/秒
       hpMul: 1,
       collisionDmg: 1,     // 碰撞对塔伤害
       cash: 1,
@@ -18,7 +18,7 @@ Tower.enemy = {
     },
     fast: {
       name: 'fast',
-      speed: 120,
+      speed: 70,
       hpMul: 1,
       collisionDmg: 1,
       cash: 2,
@@ -27,7 +27,7 @@ Tower.enemy = {
     },
     tank: {
       name: 'tank',
-      speed: 30,
+      speed: 20,
       hpMul: 5,
       collisionDmg: 3,
       cash: 4,
@@ -36,7 +36,7 @@ Tower.enemy = {
     },
     boss: {
       name: 'boss',
-      speed: 18,
+      speed: 12,
       hpMul: 20,
       collisionDmg: 10,
       cash: 10,
