@@ -64,6 +64,12 @@ Tower.loop = {
     Tower.combat.updateParticles(state, dt);
     Tower.combat.updateDamageNumbers(state, dt);
 
+    // Auto-save every 10s
+    if (!state._lastAutoSave || now - state._lastAutoSave > 10000) {
+      Tower.game._save(state);
+      state._lastAutoSave = now;
+    }
+
     // 渲染
     var size = Tower.renderer.getSize();
     var towerPos = Tower.tower.position(size.w, size.h);
@@ -249,10 +255,11 @@ Tower.loop = {
       state._current = 'idle';
       // Coins 结算
       Tower.economy.earnCoins(state, state.wave);
-      // 更新最佳波次
+      // 更新最佳波次 + 立即保存
       if (state.wave > state.bestWave) {
         state.bestWave = state.wave;
       }
+      Tower.game._save(state);
       state.wave++;
       // 清理实体
       state.enemies = [];
