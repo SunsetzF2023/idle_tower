@@ -193,7 +193,7 @@ Tower.loop = {
 
     // 先检查特殊队列
     var enemyType = 'basic';
-    if (self._spawnQueue.length > 0 && Tower.utils.chance(0.5)) {
+    if (self._spawnQueue.length > 0 && Tower.utils.chance(0.85)) {
       enemyType = self._spawnQueue.shift();
     } else if (!Tower.utils.chance(spawnRate)) {
       return; // 概率判定失败，不生成

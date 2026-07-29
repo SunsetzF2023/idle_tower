@@ -116,14 +116,14 @@ Tower.enemy = {
       comp.push({ type: 'boss', count: 1 });
     }
 
-    // Fast from wave 6, but only a few
-    if (wave >= 6) {
-      comp.push({ type: 'fast', count: Math.floor((wave - 5) * 0.5) });
+    // Fast from wave 5, at least 1 per wave
+    if (wave >= 5) {
+      comp.push({ type: 'fast', count: Math.max(1, Math.floor((wave - 4) * 0.6)) });
     }
 
-    // Tank from wave 10
-    if (wave >= 10) {
-      comp.push({ type: 'tank', count: Math.floor((wave - 9) * 0.5) });
+    // Tank from wave 8
+    if (wave >= 8) {
+      comp.push({ type: 'tank', count: Math.max(1, Math.floor((wave - 7) * 0.4)) });
     }
 
     return comp;
