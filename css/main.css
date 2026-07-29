@@ -1,0 +1,181 @@
+/* ═══════════════════════════════════════════════
+   main.css — The Tower Clone
+   深色主题 · 三栏布局 · 护眼暗色
+   ═══════════════════════════════════════════════ */
+
+:root {
+  --bg: #0f1119;
+  --bg2: #1a1d2e;
+  --bg3: #222640;
+  --border: #2d3148;
+  --text: #a9b1d6;
+  --text-bright: #c0caf5;
+  --blue: #7dcfff;
+  --red: #f7768e;
+  --green: #9ece6a;
+  --orange: #e0af68;
+  --purple: #bb9af7;
+  --amber: #ff9e64;
+  --mono: "Consolas", "Cascadia Code", "Fira Code", monospace;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 13px;
+  overflow: hidden;
+  user-select: none;
+}
+
+/* ── 三栏布局 ── */
+#app {
+  display: flex;
+  height: 100%;
+}
+
+#left-panel, #right-panel {
+  width: 240px;
+  min-width: 240px;
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+#right-panel {
+  border-right: none;
+  border-left: 1px solid var(--border);
+}
+
+#game-area {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  min-width: 400px;
+}
+
+canvas {
+  display: block;
+}
+
+/* ── 面板通用 ── */
+.panel-section {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+}
+.panel-title {
+  font-size: 10px;
+  color: var(--text);
+  opacity: 0.5;
+  letter-spacing: 0.1em;
+  margin-bottom: 6px;
+}
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2px 0;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.stat-label { color: var(--text); }
+.stat-value { color: var(--text-bright); font-weight: 600; }
+.stat-value.hp     { color: var(--red); }
+.stat-value.damage { color: var(--blue); }
+.stat-value.cash   { color: var(--green); }
+.stat-value.coins  { color: var(--orange); }
+
+/* ── 升级面板 ── */
+.upgrade-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(48,54,61,0.3);
+}
+.upgrade-info { flex: 1; }
+.upgrade-name  { font-size: 12px; color: var(--text-bright); }
+.upgrade-stat  { font-size: 10px; color: var(--text); }
+.upgrade-cost  { font-size: 10px; color: var(--green); margin-top: 2px; }
+
+.upgrade-btn {
+  padding: 5px 10px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  color: var(--blue);
+  font-family: var(--mono);
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.12s;
+  white-space: nowrap;
+}
+.upgrade-btn:hover { border-color: var(--blue); background: #1e2a3a; }
+.upgrade-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  border-color: var(--border);
+}
+
+/* ── 波次按钮 ── */
+.wave-btn {
+  width: 100%;
+  padding: 10px;
+  background: var(--bg3);
+  border: 2px solid var(--green);
+  border-radius: 4px;
+  color: var(--green);
+  font-family: var(--mono);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.05em;
+  transition: all 0.12s;
+}
+.wave-btn:hover { background: #15281e; }
+.wave-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  border-color: var(--border);
+  color: var(--text);
+}
+
+.restart-btn {
+  width: 100%;
+  padding: 10px;
+  background: var(--bg3);
+  border: 2px solid var(--red);
+  border-radius: 4px;
+  color: var(--red);
+  font-family: var(--mono);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.12s;
+  margin-top: 8px;
+}
+.restart-btn:hover { background: #281a1e; }
+
+/* ── 游戏结束覆盖层 ── */
+#game-over-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(15,17,25,0.85);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+#game-over-overlay.show { display: flex; }
+.go-title { font-size: 24px; color: var(--red); margin-bottom: 16px; }
+.go-stat { font-size: 13px; color: var(--text); margin-bottom: 6px; }
+
+/* ── 滚动条 ── */
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+::-webkit-scrollbar-track { background: transparent; }

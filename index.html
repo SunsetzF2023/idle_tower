@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self';">
+  <title>The Tower</title>
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+  <div id="app">
+    <!-- ═══ 左侧面板 ═══ -->
+    <div id="left-panel">
+      <div class="panel-section">
+        <div class="panel-title">STATUS</div>
+        <div class="stat-row"><span class="stat-label">hp</span><span class="stat-value hp" id="s-hp">100</span></div>
+        <div class="stat-row"><span class="stat-label">dmg</span><span class="stat-value damage" id="s-dmg">6</span></div>
+        <div class="stat-row"><span class="stat-label">spd</span><span class="stat-value" id="s-spd">1.0/s</span></div>
+        <div class="stat-row"><span class="stat-label">rng</span><span class="stat-value" id="s-rng">150</span></div>
+      </div>
+      <div class="panel-section">
+        <div class="panel-title">RESOURCES</div>
+        <div class="stat-row"><span class="stat-label">cash</span><span class="stat-value cash" id="s-cash">0</span></div>
+        <div class="stat-row"><span class="stat-label">coins</span><span class="stat-value coins" id="s-coins">0</span></div>
+      </div>
+      <div class="panel-section">
+        <div class="panel-title">STATS</div>
+        <div class="stat-row"><span class="stat-label">best wave</span><span class="stat-value" id="s-best">0</span></div>
+        <div class="stat-row"><span class="stat-label">kills</span><span class="stat-value" id="s-kills">0</span></div>
+        <div style="margin-top:6px;font-size:10px;color:var(--text);opacity:0.6">
+          <div>basic: <span id="s-basic">0</span></div>
+          <div>fast: <span id="s-fast">0</span></div>
+          <div>tank: <span id="s-tank">0</span></div>
+          <div>boss: <span id="s-boss">0</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ 中间游戏区 ═══ -->
+    <div id="game-area">
+      <canvas id="game-canvas"></canvas>
+      <div id="game-over-overlay">
+        <div class="go-title">GAME OVER</div>
+        <div class="go-stat">wave <span id="go-wave">0</span></div>
+        <div class="go-stat">kills <span id="go-kills">0</span></div>
+        <button class="restart-btn" onclick="Tower.game.restart()" style="margin-top:16px;width:200px">restart</button>
+      </div>
+    </div>
+
+    <!-- ═══ 右侧面板 ═══ -->
+    <div id="right-panel">
+      <div class="panel-section">
+        <div class="panel-title">UPGRADE</div>
+        <div class="upgrade-row">
+          <div class="upgrade-info">
+            <div class="upgrade-name">damage</div>
+            <div class="upgrade-stat">6 → <span id="u-dmg-next">8</span></div>
+            <div class="upgrade-cost">cost <span id="u-dmg-cost">10</span> cash</div>
+          </div>
+          <button class="upgrade-btn" id="u-dmg-btn" onclick="Tower.game.upgrade('damage')">Lv.<span id="u-dmg-lv">0</span></button>
+        </div>
+        <div class="upgrade-row">
+          <div class="upgrade-info">
+            <div class="upgrade-name">speed</div>
+            <div class="upgrade-stat">1.0/s → <span id="u-spd-next">1.05/s</span></div>
+            <div class="upgrade-cost">cost <span id="u-spd-cost">10</span> cash</div>
+          </div>
+          <button class="upgrade-btn" id="u-spd-btn" onclick="Tower.game.upgrade('speed')">Lv.<span id="u-spd-lv">0</span></button>
+        </div>
+        <div class="upgrade-row">
+          <div class="upgrade-info">
+            <div class="upgrade-name">range</div>
+            <div class="upgrade-stat">150 → <span id="u-rng-next">155</span></div>
+            <div class="upgrade-cost">cost <span id="u-rng-cost">15</span> cash</div>
+          </div>
+          <button class="upgrade-btn" id="u-rng-btn" onclick="Tower.game.upgrade('range')">Lv.<span id="u-rng-lv">0</span></button>
+        </div>
+      </div>
+      <div class="panel-section">
+        <div class="panel-title">WAVE</div>
+        <div class="stat-row"><span class="stat-label">wave</span><span class="stat-value" id="s-wave">1</span></div>
+        <div class="stat-row"><span class="stat-label">left</span><span class="stat-value" id="s-left">0</span></div>
+        <div style="margin-top:10px">
+          <button class="wave-btn" id="wave-btn" onclick="Tower.game.nextWave()">▶ next wave</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ JS 按依赖顺序加载 ═══ -->
+  <script src="js/utils.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/tower.js"></script>
+  <script src="js/enemy.js"></script>
+  <script src="js/bullet.js"></script>
+  <script src="js/wave.js"></script>
+  <script src="js/combat.js"></script>
+  <script src="js/economy.js"></script>
+  <script src="js/renderer.js"></script>
+  <script src="js/panels.js"></script>
+  <script src="js/loop.js"></script>
+  <script src="js/game.js"></script>
+  <script>Tower.game.init();</script>
+</body>
+</html>
