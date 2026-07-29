@@ -1,24 +1,21 @@
 /* ═══════════════════════════════════════════════
-   game.js — 主控制器：初始化、状态转换、生命周期
+   game.js — main controller: init, state machine, workshop
    ═══════════════════════════════════════════════ */
 window.Tower = window.Tower || {};
 
 Tower.game = {
 
-  /** 初始化游戏 */
+  /** Initialize game */
   init: function () {
-    // Canvas
     Tower.renderer.init('game-canvas');
 
-    // 加载存档
     var save = Tower.storage.load(Tower.storage.defaults());
 
-    // 初始化全局状态
     var state = {
-      // 游戏状态
-      _current: 'idle',  // idle | playing | wave_complete | game_over
+      _current: 'idle',
+      _leftTab: 'ingame',
 
-      // 塔
+      // Tower
       towerHP: 100,
       towerMaxHP: 100,
       damageLevel: 0,
@@ -26,41 +23,81 @@ Tower.game = {
       rangeLevel: 0,
       _flashTimer: 0,
 
-      // 资源
+      // Resources
       cash: 0,
       coins: save.coins || 0,
 
-      // 波次
+      // Permanent upgrades
+      workshop: save.workshop || { damage: 0, speed: 0, range: 0, cash: 0 },
+
+      // Wave
       wave: 1,
 
-      // 统计
+      // Stats
       bestWave: save.bestWave || 0,
       totalKills: save.totalKills || 0,
       killsByType: save.killsByType || { basic: 0, fast: 0, tank: 0, boss: 0 },
       waveKills: 0,
 
-      // 实体池
+      // Entity pools
       enemies: [],
       bullets: [],
       particles: [],
       damageNumbers: []
     };
 
-    // 挂到全局，方便所有模块访问
+    // Apply starting cash from workshop
+    state.cash = Tower.tower.startingCash(state);
+
     this.state = state;
-
-    // 渲染初始画面
     Tower.panels.refreshAll(state);
-
-    // 启动游戏循环
     Tower.loop.start(state);
   },
 
-  /** 点击"下一波" */
+  /** Persist stats to localStorage */
+  _save: function (state) {
+    Tower.storage.save({
+      bestWave: state.bestWave,
+      totalKills: state.totalKills,
+      killsByType: state.killsByType,
+      coins: state.coins,
+      workshop: state.workshop
+    });
+  },
+
+  /** Switch left panel tab */
+  switchLeftTab: function (tab) {
+    var state = this.state;
+    state._leftTab = tab;
+    document.getElementById('left-ingame').style.display = tab === 'ingame' ? 'block' : 'none';
+    document.getElementById('left-workshop').style.display = tab === 'workshop' ? 'block' : 'none';
+    document.getElementById('tab-ingame').classList.toggle('active', tab === 'ingame');
+    document.getElementById('tab-workshop').classList.toggle('active', tab === 'workshop');
+    if (tab === 'workshop') {
+      Tower.panels.renderWorkshop(state);
+    }
+  },
+
+  /** Buy workshop upgrade */
+  buyWorkshop: function (key) {
+    var state = this.state;
+    var ws = state.workshop;
+    var def = Tower.tower.WORKSHOP[key];
+    var lv = ws[key] || 0;
+    if (lv >= def.max) return;
+    var cost = Tower.tower.workshopCost(key, lv);
+    if (state.coins < cost) return;
+    state.coins -= cost;
+    ws[key] = lv + 1;
+    this._save(state);
+    Tower.panels.renderWorkshop(state);
+    Tower.panels.updateLeft(state);
+  },
+
+  /** Start next wave */
   nextWave: function () {
     var state = this.state;
     if (state._current !== 'idle') return;
-    if (state._current === 'game_over') return;
 
     state._current = 'playing';
     state.waveKills = 0;
@@ -73,7 +110,7 @@ Tower.game = {
     Tower.panels.refreshAll(state);
   },
 
-  /** 升级属性 */
+  /** In-game upgrade */
   upgrade: function (stat) {
     var state = this.state;
     if (state._current !== 'idle') return;
@@ -91,44 +128,27 @@ Tower.game = {
     Tower.panels.refreshAll(state);
   },
 
-  /** 游戏结束 */
+  /** Game over handler */
   onGameOver: function (state) {
-    Tower.economy.onDeath(state);
-    // 更新最佳记录
-    if (state.wave > state.bestWave) {
-      state.bestWave = state.wave;
-    }
-    // 保存
-    Tower.storage.save({
-      bestWave: state.bestWave,
-      totalKills: state.totalKills,
-      killsByType: state.killsByType,
-      coins: state.coins
-    });
-    // 显示覆盖层
-    Tower.panels.showGameOver(state);
+    var coinBonus = Tower.economy.onDeath(state);
+    if (state.wave > state.bestWave) state.bestWave = state.wave;
+
+    this._save(state);
+    Tower.panels.showGameOver(state, coinBonus);
     Tower.panels.refreshAll(state);
   },
 
-  /** 重新开始 */
+  /** Restart run */
   restart: function () {
     var state = this.state;
-    // 保存当前统计
-    Tower.storage.save({
-      bestWave: state.bestWave,
-      totalKills: state.totalKills,
-      killsByType: state.killsByType,
-      coins: state.coins
-    });
+    this._save(state);
 
-    // 重置
     state._current = 'idle';
-    state.towerHP = 100;
-    state.towerMaxHP = 100;
+    state.towerHP = state.towerMaxHP;
     state.damageLevel = 0;
     state.speedLevel = 0;
     state.rangeLevel = 0;
-    state.cash = 0;
+    state.cash = Tower.tower.startingCash(state);
     state.wave = 1;
     state.waveKills = 0;
     state.enemies = [];

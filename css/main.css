@@ -64,6 +64,55 @@ canvas {
   display: block;
 }
 
+/* ── 左侧 Tab 切换 ── */
+#left-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+}
+.left-tab {
+  flex: 1;
+  padding: 7px 0;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 10px;
+  cursor: pointer;
+  letter-spacing: 0.05em;
+  opacity: 0.5;
+  transition: all 0.12s;
+  border-bottom: 2px solid transparent;
+}
+.left-tab:hover { opacity: 0.8; }
+.left-tab.active {
+  opacity: 1;
+  color: var(--blue);
+  border-bottom-color: var(--blue);
+}
+
+/* ── Workshop 升级行 ── */
+.ws-row {
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(48,54,61,0.3);
+}
+.ws-name { font-size: 11px; color: var(--text-bright); margin-bottom: 1px; }
+.ws-desc { font-size: 9px; color: var(--text); opacity: 0.6; margin-bottom: 3px; }
+.ws-bottom { display: flex; justify-content: space-between; align-items: center; }
+.ws-cost { font-size: 9px; color: var(--orange); }
+.ws-btn {
+  padding: 3px 8px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  color: var(--orange);
+  font-family: var(--mono);
+  font-size: 9px;
+  cursor: pointer;
+  transition: all 0.12s;
+}
+.ws-btn:hover { border-color: var(--orange); }
+.ws-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
 /* ── 面板通用 ── */
 .panel-section {
   padding: 10px 14px;

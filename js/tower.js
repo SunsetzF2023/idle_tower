@@ -35,13 +35,13 @@ Tower.tower = {
 
   /** 攻速升级信息 */
   speedInfo: function (level) {
-    var val = 1.0 + level * 0.05;
-    var next = 1.0 + (level + 1) * 0.05;
+    var val = 1.0 + level * 0.12;
+    var next = 1.0 + (level + 1) * 0.12;
     return {
       level: level,
       value: Math.round(val * 100) / 100,
       next: Math.round(next * 100) / 100,
-      cost: this.upgradeCost(10, level)
+      cost: this.upgradeCost(8, level)  // 降价，鼓励升级
     };
   },
 
@@ -55,22 +55,42 @@ Tower.tower = {
     };
   },
 
-  /** 获取当前塔的全部属性 */
+  /** 获取当前塔的全部属性（含局外永久加成） */
   getStats: function (state) {
     var di = this.damageInfo(state.damageLevel);
     var si = this.speedInfo(state.speedLevel);
     var ri = this.rangeInfo(state.rangeLevel);
+    var ws = state.workshop || {};
     return {
       hp: state.towerHP,
       maxHp: state.towerMaxHP,
-      damage: di.value,
-      attackSpeed: si.value,
-      range: ri.value,
+      damage: di.value + (ws.damage || 0),
+      attackSpeed: si.value + (ws.speed || 0) * 0.08,
+      range: ri.value + (ws.range || 0) * 3,
       size: this.baseStats().size,
       collisionRadius: this.baseStats().collisionRadius,
-      // 攻击间隔（毫秒）
-      attackInterval: Math.floor(1000 / si.value)
+      attackInterval: Math.floor(1000 / (si.value + (ws.speed || 0) * 0.08))
     };
+  },
+
+  /** ── 局外属性 (Workshop) ── */
+
+  WORKSHOP: {
+    damage: { name: 'Damage', icon: '⚔', base: 5, perLv: 1, max: 20, desc: '+1 base damage per level' },
+    speed:  { name: 'Atk Speed', icon: '⚡', base: 5, perLv: 0.08, max: 20, desc: '+0.08/s per level' },
+    range:  { name: 'Range', icon: '🎯', base: 8, perLv: 3, max: 15, desc: '+3px range per level' },
+    cash:   { name: 'Start Cash', icon: '💰', base: 3, perLv: 5, max: 20, desc: '+5 starting cash per level' }
+  },
+
+  /** 局外升级费用: baseCoins × 2^level */
+  workshopCost: function (key, level) {
+    var base = this.WORKSHOP[key].base;
+    return Math.floor(base * Math.pow(2, level));
+  },
+
+  /** 初始现金（含局外加成） */
+  startingCash: function (state) {
+    return (state.workshop && state.workshop.cash || 0) * 5;
   },
 
   /** 塔坐标 = Canvas 中心 */

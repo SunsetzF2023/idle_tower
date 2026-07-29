@@ -11,27 +11,47 @@
   <div id="app">
     <!-- ═══ 左侧面板 ═══ -->
     <div id="left-panel">
-      <div class="panel-section">
-        <div class="panel-title">STATUS</div>
-        <div class="stat-row"><span class="stat-label">hp</span><span class="stat-value hp" id="s-hp">100</span></div>
-        <div class="stat-row"><span class="stat-label">dmg</span><span class="stat-value damage" id="s-dmg">6</span></div>
-        <div class="stat-row"><span class="stat-label">spd</span><span class="stat-value" id="s-spd">1.0/s</span></div>
-        <div class="stat-row"><span class="stat-label">rng</span><span class="stat-value" id="s-rng">150</span></div>
+      <!-- Tab 切换 -->
+      <div id="left-tabs">
+        <button class="left-tab active" id="tab-ingame" onclick="Tower.game.switchLeftTab('ingame')">IN-GAME</button>
+        <button class="left-tab" id="tab-workshop" onclick="Tower.game.switchLeftTab('workshop')">WORKSHOP</button>
       </div>
-      <div class="panel-section">
-        <div class="panel-title">RESOURCES</div>
-        <div class="stat-row"><span class="stat-label">cash</span><span class="stat-value cash" id="s-cash">0</span></div>
-        <div class="stat-row"><span class="stat-label">coins</span><span class="stat-value coins" id="s-coins">0</span></div>
+      <!-- 局内视图 -->
+      <div id="left-ingame">
+        <div class="panel-section">
+          <div class="panel-title">STATUS</div>
+          <div class="stat-row"><span class="stat-label">hp</span><span class="stat-value hp" id="s-hp">100</span></div>
+          <div class="stat-row"><span class="stat-label">dmg</span><span class="stat-value damage" id="s-dmg">6</span></div>
+          <div class="stat-row"><span class="stat-label">spd</span><span class="stat-value" id="s-spd">1.0/s</span></div>
+          <div class="stat-row"><span class="stat-label">rng</span><span class="stat-value" id="s-rng">150</span></div>
+        </div>
+        <div class="panel-section">
+          <div class="panel-title">RESOURCES</div>
+          <div class="stat-row"><span class="stat-label">cash</span><span class="stat-value cash" id="s-cash">0</span></div>
+          <div class="stat-row"><span class="stat-label">coins</span><span class="stat-value coins" id="s-coins">0</span></div>
+        </div>
+        <div class="panel-section">
+          <div class="panel-title">STATS</div>
+          <div class="stat-row"><span class="stat-label">best wave</span><span class="stat-value" id="s-best">0</span></div>
+          <div class="stat-row"><span class="stat-label">kills</span><span class="stat-value" id="s-kills">0</span></div>
+          <div style="margin-top:6px;font-size:10px;color:var(--text);opacity:0.6">
+            <div>basic: <span id="s-basic">0</span></div>
+            <div>fast: <span id="s-fast">0</span></div>
+            <div>tank: <span id="s-tank">0</span></div>
+            <div>boss: <span id="s-boss">0</span></div>
+          </div>
+        </div>
       </div>
-      <div class="panel-section">
-        <div class="panel-title">STATS</div>
-        <div class="stat-row"><span class="stat-label">best wave</span><span class="stat-value" id="s-best">0</span></div>
-        <div class="stat-row"><span class="stat-label">kills</span><span class="stat-value" id="s-kills">0</span></div>
-        <div style="margin-top:6px;font-size:10px;color:var(--text);opacity:0.6">
-          <div>basic: <span id="s-basic">0</span></div>
-          <div>fast: <span id="s-fast">0</span></div>
-          <div>tank: <span id="s-tank">0</span></div>
-          <div>boss: <span id="s-boss">0</span></div>
+      <!-- 局外视图 -->
+      <div id="left-workshop" style="display:none">
+        <div class="panel-section" style="font-size:10px;color:var(--text);line-height:1.6">
+          💡 <b>Tip:</b> Coins persist across runs.<br>
+          Play more rounds, earn coins, and<br>
+          permanently upgrade your tower here.
+        </div>
+        <div class="panel-section">
+          <div class="panel-title">PERMANENT UPGRADES</div>
+          <div id="ws-upgrades"></div>
         </div>
       </div>
     </div>

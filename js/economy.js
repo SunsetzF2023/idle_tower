@@ -29,8 +29,11 @@ Tower.economy = {
     if (state.cash < 0) state.cash = 0;
   },
 
-  /** 死亡时清空 Cash（Coins 保留） */
+  /** 死亡时清空 Cash + 结算 Coins */
   onDeath: function (state) {
+    var bonus = Math.floor(state.wave * 2 + state.totalKills * 0.1);
+    state.coins += bonus;
     state.cash = 0;
+    return bonus;
   }
 };

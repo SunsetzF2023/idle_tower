@@ -71,16 +71,20 @@ Tower.renderer = {
   _drawRange: function (state, center) {
     var ctx = this.ctx;
     var stats = Tower.tower.getStats(state);
+    // 黄色虚线圆圈 — 清晰可见
+    ctx.save();
     ctx.beginPath();
     ctx.arc(center.x, center.y, stats.range, 0, Math.PI * 2);
-    ctx.strokeStyle = 'rgba(125,207,255,0.08)';
-    ctx.lineWidth = 1;
+    ctx.setLineDash([8, 6]);
+    ctx.strokeStyle = 'rgba(255,200,80,0.35)';
+    ctx.lineWidth = 1.5;
     ctx.stroke();
-    // 内圈虚线效果 — 用半透填充替代
+    // 内圈半透填充
     ctx.beginPath();
     ctx.arc(center.x, center.y, stats.range, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(125,207,255,0.02)';
+    ctx.fillStyle = 'rgba(255,200,80,0.03)';
     ctx.fill();
+    ctx.restore();
   },
 
   _drawTower: function (state, center) {

@@ -60,10 +60,22 @@ Tower.panels = {
   },
 
   /** 显示/隐藏 Game Over 覆盖层 */
-  showGameOver: function (state) {
+  showGameOver: function (state, coinBonus) {
     document.getElementById('game-over-overlay').classList.add('show');
     document.getElementById('go-wave').textContent = state.wave;
     document.getElementById('go-kills').textContent = state.totalKills;
+    // 动态添加 coins 结算信息
+    var existing = document.getElementById('go-coins');
+    if (!existing) {
+      var div = document.createElement('div');
+      div.className = 'go-stat';
+      div.id = 'go-coins';
+      div.style.color = '#e0af68';
+      var overlay = document.getElementById('game-over-overlay');
+      var btn = overlay.querySelector('.restart-btn');
+      overlay.insertBefore(div, btn);
+    }
+    document.getElementById('go-coins').textContent = '+ ' + (coinBonus || 0) + ' coins earned';
   },
 
   hideGameOver: function () {
@@ -75,5 +87,38 @@ Tower.panels = {
     this.updateLeft(state);
     this.updateUpgrades(state);
     this.updateWave(state);
+    this.renderWorkshop(state);
+  },
+
+  /** 渲染局外属性面板 */
+  renderWorkshop: function (state) {
+    var ws = state.workshop || {};
+    var defs = Tower.tower.WORKSHOP;
+    var html = '';
+    var keys = ['damage', 'speed', 'range', 'cash'];
+    for (var i = 0; i < keys.length; i++) {
+      var k = keys[i];
+      var d = defs[k];
+      var lv = ws[k] || 0;
+      var cost = Tower.tower.workshopCost(k, lv);
+      var maxed = lv >= d.max;
+      var canBuy = state.coins >= cost && !maxed;
+      var bonus = '';
+      if (k === 'damage') bonus = '+' + (lv * d.perLv) + ' dmg';
+      else if (k === 'speed') bonus = '+' + (lv * d.perLv).toFixed(2) + '/s';
+      else if (k === 'range') bonus = '+' + (lv * d.perLv) + 'px';
+      else bonus = '+' + (lv * d.perLv) + ' cash';
+
+      html += '<div class="ws-row">'
+        + '<div class="ws-name">' + d.icon + ' ' + d.name + ' <span style="font-size:9px;opacity:0.5">Lv.' + lv + '</span></div>'
+        + '<div class="ws-desc">' + d.desc + ' (' + bonus + ')</div>'
+        + '<div class="ws-bottom">'
+        + '<span class="ws-cost">' + (maxed ? 'MAX' : '🪙 ' + cost) + '</span>'
+        + '<button class="ws-btn" onclick="Tower.game.buyWorkshop(\'' + k + '\')"'
+        + (canBuy ? '' : ' disabled') + '>'
+        + (maxed ? 'MAX' : 'upgrade') + '</button>'
+        + '</div></div>';
+    }
+    document.getElementById('ws-upgrades').innerHTML = html;
   }
 };
