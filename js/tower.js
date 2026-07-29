@@ -223,6 +223,11 @@ Tower.tower = {
     };
   },
 
+  /** Tower position = canvas center */
+  position: function (cw, ch) {
+    return { x: cw / 2, y: ch / 2 };
+  },
+
   startingCash: function (state) {
     return ((state.workshop && state.workshop.startCash) || 0) * this.WORKSHOP.utility.items.startCash.perLv;
   }
