@@ -123,6 +123,64 @@ Tower.panels = {
     document.getElementById('ws-upgrades').innerHTML = html;
   },
 
+  /** Render encyclopedia: enemy guide + mechanics */
+  renderEncyclo: function (state) {
+    var html = '';
+
+    // ── Enemy Guide ──
+    html += '<div class="panel-section">';
+    html += '<div class="panel-title">👾 ENEMY GUIDE</div>';
+    var types = Tower.enemy.TYPES;
+    var tKeys = ['basic', 'fast', 'tank', 'boss'];
+    for (var i = 0; i < tKeys.length; i++) {
+      var t = types[tKeys[i]];
+      var baseHP = Tower.enemy.baseHP(1);
+      html += '<div style="margin-bottom:8px;padding:6px;background:var(--bg);border-radius:4px;font-size:10px;line-height:1.6">'
+        + '<span style="color:' + t.color + ';font-size:12px">●</span> '
+        + '<b style="color:var(--text-bright)">' + t.name.toUpperCase() + '</b>'
+        + '<div style="color:var(--text);opacity:0.7">'
+        + 'HP: ' + (baseHP * t.hpMul) + ' (×' + t.hpMul + ') · '
+        + 'Spd: ' + t.speed + 'px/s · '
+        + 'Dmg: ' + t.collisionDmg + ' · '
+        + '💵 ' + t.cash
+        + '</div>';
+      // Special note
+      if (tKeys[i] === 'boss') html += '<div style="color:var(--amber);font-size:9px">Every 10 waves</div>';
+      if (tKeys[i] === 'fast') html += '<div style="color:var(--amber);font-size:9px">From wave 5</div>';
+      if (tKeys[i] === 'tank') html += '<div style="color:var(--amber);font-size:9px">From wave 8</div>';
+      html += '</div>';
+    }
+    html += '<div style="font-size:9px;color:var(--text);opacity:0.5">HP scales: 3 + wave × 3, then × type multiplier</div>';
+    html += '</div>';
+
+    // ── Mechanics ──
+    html += '<div class="panel-section">';
+    html += '<div class="panel-title">📖 MECHANICS</div>';
+    html += '<div style="font-size:10px;color:var(--text);line-height:1.8">'
+      + '<div>⚔ <b>Damage:</b> per-bullet base dmg</div>'
+      + '<div>⚡ <b>Atk Speed:</b> shots per second</div>'
+      + '<div>🎯 <b>Range:</b> target acquisition radius</div>'
+      + '<div>★ <b>Crit:</b> % chance × multiplier</div>'
+      + '<div>⫻ <b>Multishot:</b> % chance to fire second bullet</div>'
+      + '<div>🛡 <b>Defense%:</b> reduces collision dmg</div>'
+      + '<div>💚 <b>Regen:</b> HP restored per second</div>'
+      + '<div>💵 <b>Cash Bonus:</b> multiplies all cash earned</div>'
+      + '</div>';
+    html += '</div>';
+
+    // ── Currency ──
+    html += '<div class="panel-section">';
+    html += '<div class="panel-title">🪙 CURRENCY</div>';
+    html += '<div style="font-size:10px;color:var(--text);line-height:1.8">'
+      + '<div>💵 <b>Cash:</b> earned from kills. Resets on death. Spent in-game.</div>'
+      + '<div>🪙 <b>Coins:</b> earned from waves + death bonus. Permanent. Spent in Workshop.</div>'
+      + '<div style="color:var(--text);opacity:0.5;margin-top:4px">Death bonus: wave × 2 + kills × 0.1</div>'
+      + '</div>';
+    html += '</div>';
+
+    document.getElementById('left-encyclo').innerHTML = html;
+  },
+
   refreshAll: function (state) {
     this.updateLeft(state);
     this.renderUpgrades(state);

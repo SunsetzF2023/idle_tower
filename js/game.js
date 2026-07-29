@@ -76,9 +76,12 @@ Tower.game = {
     state._leftTab = tab;
     document.getElementById('left-ingame').style.display = tab === 'ingame' ? 'block' : 'none';
     document.getElementById('left-workshop').style.display = tab === 'workshop' ? 'block' : 'none';
+    document.getElementById('left-encyclo').style.display = tab === 'encyclo' ? 'block' : 'none';
     document.getElementById('tab-ingame').classList.toggle('active', tab === 'ingame');
     document.getElementById('tab-workshop').classList.toggle('active', tab === 'workshop');
+    document.getElementById('tab-encyclo').classList.toggle('active', tab === 'encyclo');
     if (tab === 'workshop') Tower.panels.renderWorkshop(state);
+    if (tab === 'encyclo') Tower.panels.renderEncyclo(state);
   },
 
   /** Buy/upgrade workshop stat (handles unlock cost + level cost) */
