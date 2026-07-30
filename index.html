@@ -15,6 +15,7 @@
       <div id="left-tabs">
         <button class="left-tab active" id="tab-ingame" onclick="Tower.game.switchLeftTab('ingame')">IN-GAME</button>
         <button class="left-tab" id="tab-workshop" onclick="Tower.game.switchLeftTab('workshop')">WORKSHOP</button>
+        <button class="left-tab" id="tab-leaderboard" onclick="Tower.game.switchLeftTab('leaderboard')">LEADER</button>
         <button class="left-tab" id="tab-encyclo" onclick="Tower.game.switchLeftTab('encyclo')">ENCYCLO</button>
       </div>
       <!-- 局内视图 -->
@@ -56,6 +57,8 @@
           <div id="ws-upgrades"></div>
         </div>
       </div>
+      <!-- 排行榜视图 -->
+      <div id="left-leaderboard" style="display:none"></div>
       <!-- 百科视图 -->
       <div id="left-encyclo" style="display:none"></div>
     </div>
@@ -94,6 +97,7 @@
   <!-- ═══ JS 按依赖顺序加载 ═══ -->
   <script src="js/utils.js"></script>
   <script src="js/storage.js"></script>
+  <script src="js/network.js"></script>
   <script src="js/tower.js"></script>
   <script src="js/enemy.js"></script>
   <script src="js/bullet.js"></script>

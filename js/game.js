@@ -7,6 +7,8 @@ Tower.game = {
 
   init: function () {
     Tower.renderer.init('game-canvas');
+    Tower.network.init();
+    Tower.network.register();
 
     var save = Tower.storage.load(Tower.storage.defaults());
 
@@ -79,11 +81,14 @@ Tower.game = {
     state._leftTab = tab;
     document.getElementById('left-ingame').style.display = tab === 'ingame' ? 'block' : 'none';
     document.getElementById('left-workshop').style.display = tab === 'workshop' ? 'block' : 'none';
+    document.getElementById('left-leaderboard').style.display = tab === 'leaderboard' ? 'block' : 'none';
     document.getElementById('left-encyclo').style.display = tab === 'encyclo' ? 'block' : 'none';
     document.getElementById('tab-ingame').classList.toggle('active', tab === 'ingame');
     document.getElementById('tab-workshop').classList.toggle('active', tab === 'workshop');
+    document.getElementById('tab-leaderboard').classList.toggle('active', tab === 'leaderboard');
     document.getElementById('tab-encyclo').classList.toggle('active', tab === 'encyclo');
     if (tab === 'workshop') Tower.panels.renderWorkshop(state);
+    if (tab === 'leaderboard') Tower.panels.renderLeaderboard(state);
     if (tab === 'encyclo') Tower.panels.renderEncyclo(state);
   },
 
@@ -179,6 +184,28 @@ Tower.game = {
     var coinBonus = Tower.economy.onDeath(state);
     if (state.wave > state.bestWave) state.bestWave = state.wave;
     this._save(state);
+
+    // 提交统计到服务器
+    Tower.network.submitStats({
+      bestWave: state.bestWave,
+      totalWaves: state.totalWaves,
+      totalKills: state.totalKills,
+      killsByType: state.killsByType,
+      coins: state.coins
+    }).catch(function () {});
+
+    // 提交每日任务进度
+    Tower.network.submitMissionProgress({
+      kill_50: state.totalKills,
+      kill_200: state.totalKills,
+      wave_5: state.wave,
+      wave_10: state.wave,
+      kill_boss: state.killsByType.boss || 0,
+      kill_tank: state.killsByType.tank || 0,
+      kill_ranged: state.killsByType.ranged || 0,
+      games_3: 1
+    }).catch(function () {});
+
     Tower.panels.showGameOver(state, coinBonus);
     Tower.panels.refreshAll(state);
   },

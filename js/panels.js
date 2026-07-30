@@ -183,6 +183,168 @@ Tower.panels = {
     document.getElementById('left-encyclo').innerHTML = html;
   },
 
+  /** Render leaderboard + daily missions */
+  renderLeaderboard: function (state) {
+    var self = this;
+    var html = '';
+
+    // ── Player identity ──
+    html += '<div class="panel-section">';
+    html += '<div class="panel-title">👤 PLAYER</div>';
+    html += '<div style="font-size:10px;color:var(--text);line-height:1.8">'
+      + '<div>Name: <b id="lb-name" style="color:var(--text-bright);cursor:pointer" onclick="Tower.panels._editName()">'
+      + (Tower.network.getName() || 'Click to set') + '</b></div>'
+      + '<div style="font-size:9px;opacity:0.5">ID: ' + Tower.network.getId().slice(0, 12) + '...</div>'
+      + '</div></div>';
+
+    // ── Leaderboard tabs ──
+    html += '<div class="panel-section" style="padding-bottom:4px">';
+    html += '<div class="panel-title">🏆 LEADERBOARD</div>';
+    html += '<div style="display:flex;gap:2px;margin-bottom:6px">';
+    ['bestWave','totalWaves','totalKills'].forEach(function (t) {
+      html += '<button class="lb-sort-btn" id="lb-sort-'+t+'" onclick="Tower.panels._loadLB(\''+t+'\')" '
+        + 'style="flex:1;padding:3px 0;font-size:8px;background:var(--bg3);border:1px solid var(--border);color:var(--text);cursor:pointer;font-family:var(--mono)">'
+        + (t==='bestWave'?'Best Wave':t==='totalWaves'?'Total Waves':'Kills') + '</button>';
+    });
+    html += '</div>';
+    html += '<div id="lb-list" style="font-size:10px;color:var(--text);line-height:1.8;max-height:300px;overflow-y:auto">';
+    html += '<div style="color:var(--text);opacity:0.4;text-align:center;padding:10px">loading...</div>';
+    html += '</div></div>';
+
+    // ── Global stats ──
+    html += '<div class="panel-section">';
+    html += '<div class="panel-title">🌍 GLOBAL STATS</div>';
+    html += '<div id="lb-global" style="font-size:10px;color:var(--text);line-height:1.8">';
+    html += '<div style="color:var(--text);opacity:0.4">loading...</div>';
+    html += '</div></div>';
+
+    // ── Daily missions ──
+    html += '<div class="panel-section">';
+    html += '<div class="panel-title">📋 DAILY MISSIONS</div>';
+    html += '<div id="lb-missions" style="font-size:10px;color:var(--text);line-height:1.8">';
+    html += '<div style="color:var(--text);opacity:0.4">loading...</div>';
+    html += '</div></div>';
+
+    document.getElementById('left-leaderboard').innerHTML = html;
+
+    // Load data
+    this._loadLB('bestWave');
+    this._loadGlobal();
+    this._loadMissions();
+  },
+
+  _editName: function () {
+    var name = prompt('Enter your player name:', Tower.network.getName() || '');
+    if (name && name.trim()) {
+      Tower.network.setName(name.trim());
+      var el = document.getElementById('lb-name');
+      if (el) el.textContent = name.trim();
+    }
+  },
+
+  _loadLB: function (type) {
+    var self = this;
+    // Highlight active sort
+    ['bestWave','totalWaves','totalKills'].forEach(function (t) {
+      var btn = document.getElementById('lb-sort-'+t);
+      if (btn) btn.style.borderColor = t === type ? 'var(--blue)' : 'var(--border)';
+    });
+
+    Tower.network.getLeaderboard(type).then(function (data) {
+      var el = document.getElementById('lb-list');
+      if (!el) return;
+      if (!data || data.length === 0) {
+        el.innerHTML = '<div style="color:var(--text);opacity:0.4;text-align:center;padding:10px">no players yet — be the first!</div>';
+        return;
+      }
+      var html = '';
+      var medals = ['🥇','🥈','🥉'];
+      var myId = Tower.network.getId();
+      for (var i = 0; i < Math.min(data.length, 20); i++) {
+        var p = data[i];
+        var rank = medals[i] || ('#' + (i+1));
+        var isMe = p.id === myId;
+        var val = type === 'bestWave' ? p.bestWave : (type === 'totalWaves' ? p.totalWaves : p.totalKills);
+        html += '<div style="' + (isMe ? 'background:rgba(125,207,255,0.08);border-radius:2px;padding:1px 4px' : 'padding:1px 4px') + '">'
+          + '<span style="width:20px;display:inline-block">' + rank + '</span>'
+          + '<span style="' + (isMe ? 'color:var(--blue)' : '') + '">' + self._esc(p.name || 'Player') + '</span>'
+          + '<span style="float:right;color:var(--text-bright)">' + val + '</span>'
+          + '</div>';
+      }
+      el.innerHTML = html;
+    }).catch(function () {
+      var el = document.getElementById('lb-list');
+      if (el) el.innerHTML = '<div style="color:var(--red);opacity:0.5;text-align:center;padding:10px">server offline</div>';
+    });
+  },
+
+  _loadGlobal: function () {
+    Tower.network.getGlobalStats().then(function (data) {
+      var el = document.getElementById('lb-global');
+      if (!el) return;
+      el.innerHTML = '<div>Players: <b style="color:var(--text-bright)">' + (data.totalPlayers||0) + '</b></div>'
+        + '<div>Active today: <b style="color:var(--green)">' + (data.activeToday||0) + '</b></div>'
+        + '<div>Top best wave: <b style="color:var(--amber)">' + (data.topBestWave||0) + '</b></div>'
+        + '<div>Total kills: <b style="color:var(--text-bright)">' + (data.totalKillsAll||0).toLocaleString() + '</b></div>';
+    }).catch(function () {
+      var el = document.getElementById('lb-global');
+      if (el) el.innerHTML = '<div style="color:var(--red);opacity:0.5">server offline</div>';
+    });
+  },
+
+  _loadMissions: function () {
+    Tower.network.getMissions().then(function (data) {
+      var el = document.getElementById('lb-missions');
+      if (!el) return;
+      if (!data || !data.missions) {
+        el.innerHTML = '<div style="color:var(--text);opacity:0.4">no missions today</div>';
+        return;
+      }
+      var html = '<div style="font-size:9px;opacity:0.5;margin-bottom:4px">' + (data.date || '') + '</div>';
+      for (var i = 0; i < data.missions.length; i++) {
+        var m = data.missions[i];
+        var pct = Math.min(100, Math.floor((m.progress||0) / m.target * 100));
+        var barColor = m.done ? 'var(--green)' : (pct > 50 ? 'var(--amber)' : 'var(--blue)');
+        html += '<div style="margin-bottom:6px;padding:4px;background:var(--bg);border-radius:3px">'
+          + '<div style="display:flex;justify-content:space-between;font-size:10px">'
+          + '<span>' + m.desc + '</span>'
+          + '<span style="color:var(--orange)">🪙' + m.reward + '</span>'
+          + '</div>'
+          + '<div style="height:3px;background:var(--bg3);border-radius:1px;margin-top:2px">'
+          + '<div style="height:100%;width:' + pct + '%;background:' + barColor + ';border-radius:1px"></div>'
+          + '</div>'
+          + '<div style="font-size:8px;color:var(--text);opacity:0.5">' + (m.progress||0) + '/' + m.target
+          + (m.done && !m.claimed ? ' <span style="color:var(--green);cursor:pointer" onclick="Tower.panels._claimMission(\''+m.id+'\')">[claim 🪙'+m.reward+']</span>' : '')
+          + (m.claimed ? ' <span style="color:var(--green)">✓</span>' : '')
+          + '</div></div>';
+      }
+      el.innerHTML = html;
+    }).catch(function () {
+      var el = document.getElementById('lb-missions');
+      if (el) el.innerHTML = '<div style="color:var(--red);opacity:0.5">server offline</div>';
+    });
+  },
+
+  _claimMission: function (missionId) {
+    var self = this;
+    Tower.network.claimMission(missionId).then(function (data) {
+      if (data && data.ok) {
+        // Refresh coins display
+        self._loadMissions();
+        var state = Tower.game.state;
+        if (state && data.reward) {
+          state.coins += data.reward;
+          Tower.game._save(state);
+          Tower.panels.updateLeft(state);
+        }
+      }
+    });
+  },
+
+  _esc: function (str) {
+    return String(str).replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  },
+
   refreshAll: function (state) {
     this.updateLeft(state);
     this.renderUpgrades(state);
