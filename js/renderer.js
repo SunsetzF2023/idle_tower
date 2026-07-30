@@ -47,6 +47,9 @@ Tower.renderer = {
     // 层 3: 子弹
     this._drawBullets(state);
 
+    // 层 3.5: 敌人子弹
+    this._drawEnemyBullets(state);
+
     // 层 4: 敌人 + 血条
     this._drawEnemies(state);
 
@@ -58,6 +61,9 @@ Tower.renderer = {
 
     // 层 7: 粒子
     this._drawParticles(state);
+
+    // 层 7.5: 地雷
+    this._drawMines();
 
     // 层 8: 塔血条（在 Canvas 上方居中）
     this._drawTowerHP(state, w);
@@ -161,6 +167,25 @@ Tower.renderer = {
     }
   },
 
+  _drawEnemyBullets: function (state) {
+    var ctx = this.ctx;
+    var bullets = state.enemyBullets || [];
+    for (var i = 0; i < bullets.length; i++) {
+      var b = bullets[i];
+      if (!b.alive) continue;
+      // 外发光
+      ctx.beginPath();
+      ctx.arc(b.x, b.y, b.radius + 2, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(187,154,247,0.25)';
+      ctx.fill();
+      // 子弹本体
+      ctx.beginPath();
+      ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
+      ctx.fillStyle = b.color || '#bb9af7';
+      ctx.fill();
+    }
+  },
+
   _drawDamageNumbers: function (state) {
     var ctx = this.ctx;
     ctx.font = '11px Consolas, monospace';
@@ -184,6 +209,30 @@ Tower.renderer = {
       ctx.beginPath();
       ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
       ctx.fillStyle = p.color;
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  },
+
+  _drawMines: function () {
+    var ctx = this.ctx;
+    var mines = Tower.loop._mines || [];
+    for (var i = 0; i < mines.length; i++) {
+      var m = mines[i];
+      var alpha = Math.min(1, m.life / 5); // fade in quickly
+      ctx.globalAlpha = alpha * 0.6;
+      // Outer ring
+      ctx.beginPath();
+      ctx.arc(m.x, m.y, m.radius, 0, Math.PI * 2);
+      ctx.strokeStyle = '#ff9e64';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([4, 2]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      // Inner dot
+      ctx.beginPath();
+      ctx.arc(m.x, m.y, 4, 0, Math.PI * 2);
+      ctx.fillStyle = '#ff9e64';
       ctx.fill();
     }
     ctx.globalAlpha = 1;

@@ -1,5 +1,6 @@
 /* ═══════════════════════════════════════════════
    combat.js — 伤害计算 + 击杀判定 + 粒子生成
+   Defense Absolute / Thorn / Death Defy implemented
    ═══════════════════════════════════════════════ */
 window.Tower = window.Tower || {};
 
@@ -12,14 +13,59 @@ Tower.combat = {
     return { damage: stats.damage, killed: killed };
   },
 
-  /** 敌人碰撞塔 */
+  /** 敌人碰撞塔 — applies Defense% + Defense Absolute */
   enemyHitTower: function (state, enemy) {
-    state.towerHP -= enemy.collisionDmg;
+    var stats = Tower.tower.getStats(state);
+    var rawDmg = enemy.collisionDmg;
+
+    // Defense % reduction
+    if (stats.defensePercent > 0) {
+      rawDmg = rawDmg * (1 - stats.defensePercent / 100);
+    }
+    // Defense Absolute (flat reduction, min 1)
+    rawDmg = Math.max(1, rawDmg - stats.defenseAbsolute);
+
+    var finalDmg = Math.floor(rawDmg);
+
+    // Thorn damage — reflect % back to enemy
+    if (stats.thornPercent > 0 && enemy.alive) {
+      var reflect = Math.floor(finalDmg * stats.thornPercent / 100);
+      if (reflect > 0) {
+        Tower.enemy.takeDamage(enemy, reflect);
+      }
+    }
+
+    state.towerHP -= finalDmg;
     if (state.towerHP < 0) state.towerHP = 0;
+
+    // Death Defy — chance to survive lethal hit
+    if (state.towerHP <= 0 && stats.deathDefy > 0) {
+      if (Tower.utils.chance(stats.deathDefy / 100)) {
+        state.towerHP = 1;
+        return { damage: finalDmg, dead: false, deathDefy: true };
+      }
+    }
+
     return {
-      damage: enemy.collisionDmg,
+      damage: finalDmg,
       dead: state.towerHP <= 0
     };
+  },
+
+  /** 计算最终伤害（给 tower bullet 用） */
+  calcBulletDamage: function (state, enemy, baseDmg) {
+    var stats = Tower.tower.getStats(state);
+
+    // Damage/Meter bonus
+    if (stats.damagePerMeter > 0) {
+      var size = Tower.renderer.getSize();
+      var tp = Tower.tower.position(size.w, size.h);
+      var dist = Tower.utils.dist(tp.x, tp.y, enemy.x, enemy.y);
+      var meterBonus = (stats.damagePerMeter / 100) * (dist / 50); // 50px ≈ 1m
+      baseDmg = Math.floor(baseDmg * (1 + meterBonus));
+    }
+
+    return baseDmg;
   },
 
   /** 生成击杀粒子 */
@@ -33,7 +79,7 @@ Tower.combat = {
         y: enemy.y,
         vx: Math.cos(angle) * speed,
         vy: Math.sin(angle) * speed,
-        life: 0.5,  // 秒
+        life: 0.5,
         maxLife: 0.5,
         radius: Tower.utils.rand(1.5, 3),
         color: enemy.color
@@ -70,7 +116,7 @@ Tower.combat = {
   updateDamageNumbers: function (state, dt) {
     for (var i = state.damageNumbers.length - 1; i >= 0; i--) {
       var d = state.damageNumbers[i];
-      d.y -= 40 * dt;  // 上浮
+      d.y -= 40 * dt;
       d.life -= dt;
       if (d.life <= 0) {
         state.damageNumbers.splice(i, 1);

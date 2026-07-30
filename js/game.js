@@ -36,15 +36,17 @@ Tower.game = {
       // Wave
       wave: 1,
 
-      // Stats
+      // Stats (persistent across runs)
       bestWave: save.bestWave || 0,
       totalKills: save.totalKills || 0,
-      killsByType: save.killsByType || { basic: 0, fast: 0, tank: 0, boss: 0 },
+      totalWaves: save.totalWaves || 0,
+      killsByType: save.killsByType || { basic: 0, fast: 0, tank: 0, boss: 0, ranged: 0 },
       waveKills: 0,
 
       // Entity pools
       enemies: [],
       bullets: [],
+      enemyBullets: [],
       particles: [],
       damageNumbers: []
     };
@@ -65,6 +67,7 @@ Tower.game = {
     Tower.storage.save({
       bestWave: state.bestWave,
       totalKills: state.totalKills,
+      totalWaves: state.totalWaves,
       killsByType: state.killsByType,
       coins: state.coins,
       workshop: state.workshop
@@ -136,6 +139,7 @@ Tower.game = {
     state.waveKills = 0;
     state.enemies = [];
     state.bullets = [];
+    state.enemyBullets = [];
     state.particles = [];
     state.damageNumbers = [];
 
@@ -150,8 +154,23 @@ Tower.game = {
     if (state[lk] === undefined) return;
     var info = Tower.tower.ingameInfo(stat, state[lk]);
     if (!info) return;
-    if (!Tower.economy.canAfford(state, info.cost)) return;
-    Tower.economy.spendCash(state, info.cost);
+
+    // Free Upgrade chance
+    var stats = Tower.tower.getStats(state);
+    var freeChance = 0;
+    if (stat === 'damage' || stat === 'speed' || stat === 'range') {
+      freeChance = stats.freeAttackChance;  // these are attack upgrades
+    }
+
+    var isFree = false;
+    if (freeChance > 0 && Tower.utils.chance(freeChance / 100)) {
+      isFree = true;
+    }
+
+    if (!isFree) {
+      if (!Tower.economy.canAfford(state, info.cost)) return;
+      Tower.economy.spendCash(state, info.cost);
+    }
     state[lk]++;
     Tower.panels.refreshAll(state);
   },
@@ -177,6 +196,7 @@ Tower.game = {
     state.waveKills = 0;
     state.enemies = [];
     state.bullets = [];
+    state.enemyBullets = [];
     state.particles = [];
     state.damageNumbers = [];
     state._flashTimer = 0;

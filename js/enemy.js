@@ -9,37 +9,61 @@ Tower.enemy = {
   TYPES: {
     basic: {
       name: 'basic',
-      speed: 40,           // 像素/秒
+      behaviour: 'charge',   // 冲塔 → 碰撞消失
+      speed: 40,
       hpMul: 1,
-      collisionDmg: 1,     // 碰撞对塔伤害
+      collisionDmg: 1,
       cash: 1,
+      coins: 0,
       radius: 12,
       color: '#f7768e'
     },
     fast: {
       name: 'fast',
+      behaviour: 'charge',
       speed: 70,
       hpMul: 1,
       collisionDmg: 1,
       cash: 2,
+      coins: 2,
       radius: 10,
       color: '#e0af68'
     },
     tank: {
       name: 'tank',
+      behaviour: 'tank',     // 贴住塔持续冲撞，不消失
       speed: 20,
       hpMul: 5,
       collisionDmg: 3,
       cash: 4,
+      coins: 5,
       radius: 14,
-      color: '#bb9af7'
+      color: '#bb9af7',
+      attackInterval: 1500   // ms，贴住后每次冲撞间隔
+    },
+    ranged: {
+      name: 'ranged',
+      behaviour: 'ranged',   // 停在射程圈边缘远程射击
+      speed: 30,
+      hpMul: 1,
+      collisionDmg: 0,       // 不碰撞 — 远程射击
+      cash: 2,
+      coins: 8,
+      radius: 11,
+      color: '#bb9af7',
+      attackInterval: 2000,  // ms，射击间隔
+      bulletDamage: 1,
+      bulletSpeed: 150,      // 敌人子弹速度 px/s
+      bulletColor: '#bb9af7'
     },
     boss: {
       name: 'boss',
+      behaviour: 'charge',
       speed: 12,
       hpMul: 20,
       collisionDmg: 10,
-      cash: 10,
+      cash: 5,            // wiki base value
+      coins: 10,
       radius: 22,
       color: '#ff9e64'
     }
@@ -57,11 +81,11 @@ Tower.enemy = {
 
     var baseHP = this.baseHP(wave);
     var pos = Tower.utils.randomEdgePos(cw, ch, 30);
-    var center = Tower.utils.canvasCenter(cw, ch);
 
-    return {
+    var enemy = {
       id: Date.now() + Math.random(),
       type: t.name,
+      behaviour: t.behaviour,
       x: pos.x,
       y: pos.y,
       radius: t.radius,
@@ -71,15 +95,34 @@ Tower.enemy = {
       maxHp: baseHP * t.hpMul,
       collisionDmg: t.collisionDmg,
       cash: Math.floor(t.cash * (1 + wave * 0.1)),
+      coins: t.coins || 0,
       alive: true,
-      reachedTower: false
+      reachedTower: false,
+      stuck: false,        // Tank 已贴住塔
+      stopped: false,      // Ranged 已停在射击位
+      _lastAttack: 0       // 上次攻击时间戳
     };
+
+    // Ranged 特殊字段
+    if (t.behaviour === 'ranged') {
+      enemy.attackInterval = t.attackInterval;
+      enemy.bulletDamage = t.bulletDamage;
+      enemy.bulletSpeed = t.bulletSpeed;
+      enemy.bulletColor = t.bulletColor;
+    }
+
+    // Tank 特殊字段
+    if (t.behaviour === 'tank') {
+      enemy.attackInterval = t.attackInterval;
+      enemy._lastAttack = 0;
+    }
+
+    return enemy;
   },
 
   /** 移动敌人向塔一步，检测敌人边缘碰到塔边缘 */
   move: function (enemy, towerX, towerY, collisionRadius, dt) {
     if (!enemy.alive) return false;
-    // 敌人碰撞距离 = 敌人半径 + 塔碰撞半径
     var hitDist = enemy.radius + collisionRadius;
     var dist = Tower.utils.dist(enemy.x, enemy.y, towerX, towerY);
     // 边缘碰到边缘 → 碰撞
@@ -87,7 +130,10 @@ Tower.enemy = {
       enemy.x = towerX + (enemy.x - towerX) * (hitDist / Math.max(dist, 0.001));
       enemy.y = towerY + (enemy.y - towerY) * (hitDist / Math.max(dist, 0.001));
       enemy.reachedTower = true;
-      enemy.alive = false;
+      // Tank 不消失，贴住持续冲撞
+      if (enemy.behaviour !== 'tank') {
+        enemy.alive = false;
+      }
       return true;
     }
     var result = Tower.utils.moveToward(enemy.x, enemy.y, towerX, towerY, enemy.speed * dt);
@@ -119,6 +165,11 @@ Tower.enemy = {
     // Fast from wave 5, at least 1 per wave
     if (wave >= 5) {
       comp.push({ type: 'fast', count: Math.max(1, Math.floor((wave - 4) * 0.6)) });
+    }
+
+    // Ranged from wave 5
+    if (wave >= 5) {
+      comp.push({ type: 'ranged', count: Math.max(1, Math.floor((wave - 4) * 0.5)) });
     }
 
     // Tank from wave 8

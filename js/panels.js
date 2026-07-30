@@ -14,6 +14,7 @@ Tower.panels = {
     document.getElementById('s-cash').textContent = state.cash;
     document.getElementById('s-coins').textContent = state.coins;
     document.getElementById('s-best').textContent = state.bestWave;
+    document.getElementById('s-totalwaves').textContent = state.totalWaves || 0;
     document.getElementById('s-kills').textContent = state.totalKills;
     document.getElementById('s-basic').textContent = state.killsByType.basic;
     document.getElementById('s-fast').textContent = state.killsByType.fast;
@@ -131,7 +132,7 @@ Tower.panels = {
     html += '<div class="panel-section">';
     html += '<div class="panel-title">👾 ENEMY GUIDE</div>';
     var types = Tower.enemy.TYPES;
-    var tKeys = ['basic', 'fast', 'tank', 'boss'];
+    var tKeys = ['basic', 'fast', 'ranged', 'tank', 'boss'];
     for (var i = 0; i < tKeys.length; i++) {
       var t = types[tKeys[i]];
       var baseHP = Tower.enemy.baseHP(1);
@@ -145,9 +146,10 @@ Tower.panels = {
         + '💵 ' + t.cash
         + '</div>';
       // Special note
-      if (tKeys[i] === 'boss') html += '<div style="color:var(--amber);font-size:9px">Every 10 waves</div>';
+      if (tKeys[i] === 'boss') html += '<div style="color:var(--amber);font-size:9px">Every 10 waves · 💥10 dmg</div>';
       if (tKeys[i] === 'fast') html += '<div style="color:var(--amber);font-size:9px">From wave 5</div>';
-      if (tKeys[i] === 'tank') html += '<div style="color:var(--amber);font-size:9px">From wave 8</div>';
+      if (tKeys[i] === 'ranged') html += '<div style="color:var(--amber);font-size:9px">From wave 5 · 🏹 Stops at range & shoots</div>';
+      if (tKeys[i] === 'tank') html += '<div style="color:var(--amber);font-size:9px">From wave 8 · 🛡 Sticks & rams tower</div>';
       html += '</div>';
     }
     html += '<div style="font-size:9px;color:var(--text);opacity:0.5">HP scales: 3 + wave × 3, then × type multiplier</div>';
