@@ -6,9 +6,9 @@ window.Tower = window.Tower || {};
 
 Tower.db = {
 
-  // ── 配置（部署时替换为你的 Supabase 项目信息）──
-  SUPABASE_URL: '',
-  SUPABASE_KEY: '',
+  // ── Supabase 项目配置 ──
+  SUPABASE_URL: 'https://nwobdjtjwwobpjvwvavq.supabase.co',
+  SUPABASE_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im53b2JkanRqd3dvYnBqdnd2YXZxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUzODczNjEsImV4cCI6MjEwMDk2MzM2MX0.iD5P5sjX3f1Fk-MpBqouW04SXrIUGXZwv402bctFkpA',
 
   _client: null,
 
