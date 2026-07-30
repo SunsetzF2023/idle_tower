@@ -7,6 +7,7 @@ const express = require('express');
 const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
+const auth = require('./auth');
 
 const app = express();
 const PORT = process.env.PORT || 3457;
@@ -36,7 +37,37 @@ function writeJSON(filepath, data) {
   fs.writeFileSync(filepath, JSON.stringify(data, null, 2), 'utf8');
 }
 
-// ═══ 玩家注册/获取 ═══
+// ═══ 账号注册 ═══
+app.post('/api/auth/register', (req, res) => {
+  const { username, password } = req.body;
+  const result = auth.register(username, password);
+  if (result.error) return res.status(400).json({ error: result.error });
+
+  // 同时创建玩家记录
+  const players = readJSON(PLAYERS_FILE, {});
+  if (!players[result.playerId]) {
+    players[result.playerId] = {
+      id: result.playerId,
+      name: result.username,
+      bestWave: 0, totalWaves: 0, totalKills: 0,
+      killsByType: { basic: 0, fast: 0, ranged: 0, tank: 0, boss: 0 },
+      totalCoins: 0, gamesPlayed: 0,
+      lastSeen: Date.now(), createdAt: Date.now()
+    };
+    writeJSON(PLAYERS_FILE, players);
+  }
+  res.json(result);
+});
+
+// ═══ 账号登录 ═══
+app.post('/api/auth/login', (req, res) => {
+  const { username, password } = req.body;
+  const result = auth.login(username, password);
+  if (result.error) return res.status(401).json({ error: result.error });
+  res.json(result);
+});
+
+// ═══ 玩家注册/获取（兼容旧 API） ═══
 app.post('/api/player', (req, res) => {
   const { id, name } = req.body;
   if (!id) return res.status(400).json({ error: 'id required' });

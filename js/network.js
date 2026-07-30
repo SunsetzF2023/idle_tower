@@ -40,6 +40,43 @@ Tower.network = {
     return this.API_BASE;
   },
 
+  /** 是否已登录 */
+  isLoggedIn: function () {
+    return !!(this._player && this._player.loggedIn);
+  },
+
+  /** 注册账号 → 返回 promise */
+  signup: function (username, password) {
+    var self = this;
+    return this._post('/api/auth/register', { username: username, password: password })
+      .then(function (data) {
+        if (data.ok) {
+          self._player = { id: data.playerId, name: data.username, loggedIn: true };
+          self._savePlayer();
+        }
+        return data;
+      });
+  },
+
+  /** 登录 → 返回 promise */
+  signin: function (username, password) {
+    var self = this;
+    return this._post('/api/auth/login', { username: username, password: password })
+      .then(function (data) {
+        if (data.ok) {
+          self._player = { id: data.playerId, name: data.username, loggedIn: true };
+          self._savePlayer();
+        }
+        return data;
+      });
+  },
+
+  /** 退出登录 */
+  logout: function () {
+    this._player = { id: this._uid(), name: '', loggedIn: false };
+    this._savePlayer();
+  },
+
   /** 注册/获取玩家名 */
   setName: function (name) {
     this._player.name = name;

@@ -8,7 +8,10 @@ Tower.game = {
   init: function () {
     Tower.renderer.init('game-canvas');
     Tower.network.init();
-    Tower.network.register();
+    // 已登录不用匿名注册，未登录自动生成匿名 ID
+    if (!Tower.network.isLoggedIn()) {
+      Tower.network.register();
+    }
 
     var save = Tower.storage.load(Tower.storage.defaults());
 

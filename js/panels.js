@@ -188,14 +188,30 @@ Tower.panels = {
     var self = this;
     var html = '';
 
-    // ── Player identity ──
+    // ── 账号（登录/注册） ──
     html += '<div class="panel-section">';
-    html += '<div class="panel-title">👤 PLAYER</div>';
-    html += '<div style="font-size:10px;color:var(--text);line-height:1.8">'
-      + '<div>Name: <b id="lb-name" style="color:var(--text-bright);cursor:pointer" onclick="Tower.panels._editName()">'
-      + (Tower.network.getName() || 'Click to set') + '</b></div>'
-      + '<div style="font-size:9px;opacity:0.5">ID: ' + Tower.network.getId().slice(0, 12) + '...</div>'
-      + '</div></div>';
+    html += '<div class="panel-title">👤 ACCOUNT</div>';
+
+    if (Tower.network.isLoggedIn()) {
+      html += '<div style="font-size:10px;color:var(--text);line-height:1.8">'
+        + '<div><b style="color:var(--text-bright)">' + Tower.network.getName() + '</b>'
+        + ' <span style="font-size:8px;color:var(--green)">● online</span></div>'
+        + '<div style="font-size:8px;opacity:0.4">🆔 ' + Tower.network.getId() + '</div>'
+        + '<button onclick="Tower.panels._logout()" style="width:100%;margin-top:4px;padding:3px;background:var(--bg3);border:1px solid var(--border);color:var(--red);font-family:var(--mono);font-size:9px;cursor:pointer">logout</button>'
+        + '</div>';
+    } else {
+      html += '<div style="font-size:10px;color:var(--text)">'
+        + '<input id="lb-user" type="text" placeholder="username" '
+        + 'style="width:100%;padding:4px 6px;background:var(--bg);border:1px solid var(--border);color:var(--text-bright);font-family:var(--mono);font-size:9px;border-radius:2px;margin-bottom:3px">'
+        + '<input id="lb-pass" type="password" placeholder="password" '
+        + 'style="width:100%;padding:4px 6px;background:var(--bg);border:1px solid var(--border);color:var(--text-bright);font-family:var(--mono);font-size:9px;border-radius:2px;margin-bottom:3px">'
+        + '<div id="lb-auth-msg" style="font-size:8px;color:var(--red);min-height:10px;margin-bottom:3px"></div>'
+        + '<div style="display:flex;gap:3px">'
+        + '<button onclick="Tower.panels._doLogin()" style="flex:1;padding:3px;background:var(--bg3);border:1px solid var(--blue);color:var(--blue);font-family:var(--mono);font-size:9px;cursor:pointer">sign in</button>'
+        + '<button onclick="Tower.panels._doSignup()" style="flex:1;padding:3px;background:var(--bg3);border:1px solid var(--green);color:var(--green);font-family:var(--mono);font-size:9px;cursor:pointer">register</button>'
+        + '</div></div>';
+    }
+    html += '</div>';
 
     // ── Server config ──
     var currentUrl = Tower.network.getServerUrl();
@@ -249,6 +265,41 @@ Tower.panels = {
 
   _setServerUrl: function (url) {
     Tower.network.setServerUrl(url);
+  },
+
+  _doLogin: function () {
+    var user = document.getElementById('lb-user').value.trim();
+    var pass = document.getElementById('lb-pass').value;
+    var msg = document.getElementById('lb-auth-msg');
+    if (!user || !pass) { msg.textContent = 'fill in both fields'; return; }
+    msg.textContent = '...';
+    var self = this;
+    Tower.network.signin(user, pass).then(function (r) {
+      if (r.error) { msg.textContent = r.error; return; }
+      self.renderLeaderboard(Tower.game.state);
+      self.updateLeft(Tower.game.state);
+    }).catch(function () { msg.textContent = 'server unreachable'; });
+  },
+
+  _doSignup: function () {
+    var user = document.getElementById('lb-user').value.trim();
+    var pass = document.getElementById('lb-pass').value;
+    var msg = document.getElementById('lb-auth-msg');
+    if (!user || !pass) { msg.textContent = 'fill in both fields'; return; }
+    if (pass.length < 4) { msg.textContent = 'password min 4 chars'; return; }
+    msg.textContent = '...';
+    var self = this;
+    Tower.network.signup(user, pass).then(function (r) {
+      if (r.error) { msg.textContent = r.error; return; }
+      self.renderLeaderboard(Tower.game.state);
+      self.updateLeft(Tower.game.state);
+    }).catch(function () { msg.textContent = 'server unreachable'; });
+  },
+
+  _logout: function () {
+    Tower.network.logout();
+    Tower.game.restart();
+    this.renderLeaderboard(Tower.game.state);
   },
 
   _editName: function () {
