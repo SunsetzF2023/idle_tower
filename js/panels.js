@@ -192,11 +192,11 @@ Tower.panels = {
     html += '<div class="panel-section">';
     html += '<div class="panel-title">👤 ACCOUNT</div>';
 
-    if (Tower.network.isLoggedIn()) {
+    if (Tower.db.isLoggedIn()) {
       html += '<div style="font-size:10px;color:var(--text);line-height:1.8">'
-        + '<div><b style="color:var(--text-bright)">' + Tower.network.getName() + '</b>'
+        + '<div><b style="color:var(--text-bright)">' + Tower.db.getName() + '</b>'
         + ' <span style="font-size:8px;color:var(--green)">● online</span></div>'
-        + '<div style="font-size:8px;opacity:0.4">🆔 ' + Tower.network.getId() + '</div>'
+        + '<div style="font-size:8px;opacity:0.4">🆔 ' + Tower.db.getId() + '</div>'
         + '<button onclick="Tower.panels._logout()" style="width:100%;margin-top:4px;padding:3px;background:var(--bg3);border:1px solid var(--border);color:var(--red);font-family:var(--mono);font-size:9px;cursor:pointer">logout</button>'
         + '</div>';
     } else {
@@ -213,18 +213,11 @@ Tower.panels = {
     }
     html += '</div>';
 
-    // ── Server config ──
-    var currentUrl = Tower.network.getServerUrl();
-    html += '<div class="panel-section">';
-    html += '<div class="panel-title">🔗 SERVER</div>';
-    html += '<div style="font-size:10px;color:var(--text)">'
-      + '<input id="lb-server-url" type="text" placeholder="Paste Pinggy URL here..." '
-      + 'value="' + (currentUrl || '') + '" '
-      + 'style="width:100%;padding:4px 6px;background:var(--bg);border:1px solid var(--border);color:var(--text-bright);font-family:var(--mono);font-size:9px;border-radius:2px;margin-bottom:4px" '
-      + 'onchange="Tower.panels._setServerUrl(this.value)">'
-      + '<button onclick="Tower.panels._setServerUrl(document.getElementById(\'lb-server-url\').value);Tower.panels.renderLeaderboard(Tower.game.state)" '
-      + 'style="width:100%;padding:3px;background:var(--bg3);border:1px solid var(--border);color:var(--blue);font-family:var(--mono);font-size:9px;cursor:pointer">↻ connect</button>'
-      + (currentUrl ? '<div style="font-size:8px;color:var(--green);margin-top:3px">✓ connected</div>' : '<div style="font-size:8px;color:var(--text);opacity:0.4;margin-top:3px">empty = offline mode</div>')
+    // ── 连接状态 ──
+    var isSupabase = !!(Tower.db.SUPABASE_URL && Tower.db.SUPABASE_KEY);
+    html += '<div class="panel-section" style="padding:6px 14px">';
+    html += '<div style="font-size:8px;color:' + (isSupabase ? 'var(--green)' : 'var(--text)') + ';opacity:' + (isSupabase ? '0.8' : '0.4') + '">'
+      + (isSupabase ? '☁ Supabase connected' : '⚙ offline mode')
       + '</div></div>';
 
     // ── Leaderboard tabs ──
@@ -263,10 +256,6 @@ Tower.panels = {
     this._loadMissions();
   },
 
-  _setServerUrl: function (url) {
-    Tower.network.setServerUrl(url);
-  },
-
   _doLogin: function () {
     var user = document.getElementById('lb-user').value.trim();
     var pass = document.getElementById('lb-pass').value;
@@ -274,7 +263,7 @@ Tower.panels = {
     if (!user || !pass) { msg.textContent = 'fill in both fields'; return; }
     msg.textContent = '...';
     var self = this;
-    Tower.network.signin(user, pass).then(function (r) {
+    Tower.db.signin(user, pass).then(function (r) {
       if (r.error) { msg.textContent = r.error; return; }
       self.renderLeaderboard(Tower.game.state);
       self.updateLeft(Tower.game.state);
@@ -289,7 +278,7 @@ Tower.panels = {
     if (pass.length < 4) { msg.textContent = 'password min 4 chars'; return; }
     msg.textContent = '...';
     var self = this;
-    Tower.network.signup(user, pass).then(function (r) {
+    Tower.db.signup(user, pass).then(function (r) {
       if (r.error) { msg.textContent = r.error; return; }
       self.renderLeaderboard(Tower.game.state);
       self.updateLeft(Tower.game.state);
@@ -297,15 +286,15 @@ Tower.panels = {
   },
 
   _logout: function () {
-    Tower.network.logout();
+    Tower.db.logout();
     Tower.game.restart();
     this.renderLeaderboard(Tower.game.state);
   },
 
   _editName: function () {
-    var name = prompt('Enter your player name:', Tower.network.getName() || '');
+    var name = prompt('Enter your player name:', Tower.db.getName() || '');
     if (name && name.trim()) {
-      Tower.network.setName(name.trim());
+      Tower.db.setName(name.trim());
       var el = document.getElementById('lb-name');
       if (el) el.textContent = name.trim();
     }
@@ -319,7 +308,7 @@ Tower.panels = {
       if (btn) btn.style.borderColor = t === type ? 'var(--blue)' : 'var(--border)';
     });
 
-    Tower.network.getLeaderboard(type).then(function (data) {
+    Tower.db.getLeaderboard(type).then(function (data) {
       var el = document.getElementById('lb-list');
       if (!el) return;
       if (!data || data.length === 0) {
@@ -328,7 +317,7 @@ Tower.panels = {
       }
       var html = '';
       var medals = ['🥇','🥈','🥉'];
-      var myId = Tower.network.getId();
+      var myId = Tower.db.getId();
       for (var i = 0; i < Math.min(data.length, 20); i++) {
         var p = data[i];
         var rank = medals[i] || ('#' + (i+1));
@@ -348,7 +337,7 @@ Tower.panels = {
   },
 
   _loadGlobal: function () {
-    Tower.network.getGlobalStats().then(function (data) {
+    Tower.db.getGlobalStats().then(function (data) {
       var el = document.getElementById('lb-global');
       if (!el) return;
       el.innerHTML = '<div>Players: <b style="color:var(--text-bright)">' + (data.totalPlayers||0) + '</b></div>'
@@ -362,7 +351,7 @@ Tower.panels = {
   },
 
   _loadMissions: function () {
-    Tower.network.getMissions().then(function (data) {
+    Tower.db.getMissions().then(function (data) {
       var el = document.getElementById('lb-missions');
       if (!el) return;
       if (!data || !data.missions) {
@@ -396,7 +385,7 @@ Tower.panels = {
 
   _claimMission: function (missionId) {
     var self = this;
-    Tower.network.claimMission(missionId).then(function (data) {
+    Tower.db.claimMission(missionId).then(function (data) {
       if (data && data.ok) {
         // Refresh coins display
         self._loadMissions();

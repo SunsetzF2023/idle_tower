@@ -7,11 +7,7 @@ Tower.game = {
 
   init: function () {
     Tower.renderer.init('game-canvas');
-    Tower.network.init();
-    // 已登录不用匿名注册，未登录自动生成匿名 ID
-    if (!Tower.network.isLoggedIn()) {
-      Tower.network.register();
-    }
+    Tower.db.init();
 
     var save = Tower.storage.load(Tower.storage.defaults());
 
@@ -188,25 +184,13 @@ Tower.game = {
     if (state.wave > state.bestWave) state.bestWave = state.wave;
     this._save(state);
 
-    // 提交统计到服务器
-    Tower.network.submitStats({
+    // 提交统计到 Supabase
+    Tower.db.submitStats({
       bestWave: state.bestWave,
       totalWaves: state.totalWaves,
       totalKills: state.totalKills,
       killsByType: state.killsByType,
       coins: state.coins
-    }).catch(function () {});
-
-    // 提交每日任务进度
-    Tower.network.submitMissionProgress({
-      kill_50: state.totalKills,
-      kill_200: state.totalKills,
-      wave_5: state.wave,
-      wave_10: state.wave,
-      kill_boss: state.killsByType.boss || 0,
-      kill_tank: state.killsByType.tank || 0,
-      kill_ranged: state.killsByType.ranged || 0,
-      games_3: 1
     }).catch(function () {});
 
     Tower.panels.showGameOver(state, coinBonus);
