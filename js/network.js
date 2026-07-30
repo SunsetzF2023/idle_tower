@@ -5,8 +5,9 @@ window.Tower = window.Tower || {};
 
 Tower.network = {
 
-  // 配置：修改为你的 Pinggy URL 或 localhost
-  API_BASE: 'http://localhost:3457',
+  // 配置：相对路径 = 同源访问（localhost 和 Pinggy 都适用）
+  // 如果游戏和服务器在不同地址，改为完整 URL，如 'https://xxx.pinggy.link'
+  API_BASE: '',
 
   /** 初始化：加载或创建玩家 ID */
   init: function () {
