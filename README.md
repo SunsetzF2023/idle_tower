@@ -1,7 +1,5 @@
 # The Tower Clone
 
-复刻热门放置塔防游戏 The Tower - Idle Tower Defense。
-
 纯 JS/HTML/CSS，零依赖。双击 `index.html` 即可游玩。
 
 ## 玩法
