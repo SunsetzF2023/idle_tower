@@ -197,6 +197,20 @@ Tower.panels = {
       + '<div style="font-size:9px;opacity:0.5">ID: ' + Tower.network.getId().slice(0, 12) + '...</div>'
       + '</div></div>';
 
+    // ── Server config ──
+    var currentUrl = Tower.network.getServerUrl();
+    html += '<div class="panel-section">';
+    html += '<div class="panel-title">🔗 SERVER</div>';
+    html += '<div style="font-size:10px;color:var(--text)">'
+      + '<input id="lb-server-url" type="text" placeholder="Paste Pinggy URL here..." '
+      + 'value="' + (currentUrl || '') + '" '
+      + 'style="width:100%;padding:4px 6px;background:var(--bg);border:1px solid var(--border);color:var(--text-bright);font-family:var(--mono);font-size:9px;border-radius:2px;margin-bottom:4px" '
+      + 'onchange="Tower.panels._setServerUrl(this.value)">'
+      + '<button onclick="Tower.panels._setServerUrl(document.getElementById(\'lb-server-url\').value);Tower.panels.renderLeaderboard(Tower.game.state)" '
+      + 'style="width:100%;padding:3px;background:var(--bg3);border:1px solid var(--border);color:var(--blue);font-family:var(--mono);font-size:9px;cursor:pointer">↻ connect</button>'
+      + (currentUrl ? '<div style="font-size:8px;color:var(--green);margin-top:3px">✓ connected</div>' : '<div style="font-size:8px;color:var(--text);opacity:0.4;margin-top:3px">empty = offline mode</div>')
+      + '</div></div>';
+
     // ── Leaderboard tabs ──
     html += '<div class="panel-section" style="padding-bottom:4px">';
     html += '<div class="panel-title">🏆 LEADERBOARD</div>';
@@ -231,6 +245,10 @@ Tower.panels = {
     this._loadLB('bestWave');
     this._loadGlobal();
     this._loadMissions();
+  },
+
+  _setServerUrl: function (url) {
+    Tower.network.setServerUrl(url);
   },
 
   _editName: function () {

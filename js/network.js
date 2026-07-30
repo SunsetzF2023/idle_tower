@@ -5,16 +5,19 @@ window.Tower = window.Tower || {};
 
 Tower.network = {
 
-  // 配置：相对路径 = 同源访问（localhost 和 Pinggy 都适用）
-  // 如果游戏和服务器在不同地址，改为完整 URL，如 'https://xxx.pinggy.link'
+  // 从 localStorage 加载，默认为空（同源访问）
   API_BASE: '',
 
-  /** 初始化：加载或创建玩家 ID */
+  /** 初始化：加载或创建玩家 ID + 服务器地址 */
   init: function () {
     var stored = null;
     try { stored = JSON.parse(localStorage.getItem('tower_player') || 'null'); } catch (e) {}
     this._player = stored || { id: this._uid(), name: '' };
     if (!stored) this._savePlayer();
+
+    var savedUrl = null;
+    try { savedUrl = localStorage.getItem('tower_server_url'); } catch (e) {}
+    this.API_BASE = savedUrl || '';
   },
 
   _uid: function () {
@@ -23,6 +26,18 @@ Tower.network = {
 
   _savePlayer: function () {
     try { localStorage.setItem('tower_player', JSON.stringify(this._player)); } catch (e) {}
+  },
+
+  /** 设置自定义服务器地址（Pinggy / 自建） */
+  setServerUrl: function (url) {
+    url = (url || '').replace(/\/+$/, '');
+    this.API_BASE = url;
+    try { localStorage.setItem('tower_server_url', url); } catch (e) {}
+    return url;
+  },
+
+  getServerUrl: function () {
+    return this.API_BASE;
   },
 
   /** 注册/获取玩家名 */
