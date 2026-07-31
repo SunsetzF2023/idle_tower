@@ -78,18 +78,16 @@ Tower.db = {
     var self = this;
     if (!this._client) return Promise.reject('no client');
     var email = username.indexOf('@') !== -1 ? username : username + '@tower.user';
-    return this._client.auth.signUp({ email: email, password: password })
-      .then(function (r) {
+    return this._client.auth.signUp({
+      email: email,
+      password: password,
+      options: { data: { username: username } }
+    }).then(function (r) {
         if (r.error) return { error: r.error.message };
-        // 创建玩家记录
         var uid = r.data.user.id;
-        return self._client.from('players').insert({
-          user_id: uid, username: username
-        }).then(function () {
-          self._setCachedUser({ id: uid, name: username });
-          self._saveSession();
-          return { ok: true, playerId: uid, username: username };
-        });
+        self._setCachedUser({ id: uid, name: username });
+        self._saveSession();
+        return { ok: true, playerId: uid, username: username };
       });
   },
 
