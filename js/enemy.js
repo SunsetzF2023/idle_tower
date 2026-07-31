@@ -77,12 +77,12 @@ Tower.enemy = {
       coins: 12,
       radius: 13,
       color: '#ff6b35',
-      attackInterval: 400,    // ms — fast ticks like Inferno Tower
+      attackInterval: 800,    // ms — deliberate ticks
       bulletDamage: 1,        // base, ramps up
       bulletSpeed: 9999,      // instant beam (handled in loop)
       bulletColor: '#ff4500',
-      rampRate: 0.8,          // +0.8 damage per second
-      maxDamage: 8            // damage cap
+      rampRate: 0.3,          // +0.3 damage per second (slower ramp)
+      maxDamage: 4            // damage cap (was 8, too punishing)
     }
   },
 
