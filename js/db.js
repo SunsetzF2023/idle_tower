@@ -111,6 +111,13 @@ Tower.db = {
         var name = meta.user_name || meta.full_name || user.email || 'Player';
         self._setCachedUser({ id: user.id, name: name });
         self._saveSession();
+        // Ensure players row exists (trigger may have missed existing users)
+        self._client.from('players').select('user_id').eq('user_id', user.id).maybeSingle()
+          .then(function (pr) {
+            if (!pr.data) {
+              self._client.from('players').insert({ user_id: user.id, username: name });
+            }
+          });
       }
     }).catch(function () {});
   },
@@ -214,7 +221,7 @@ Tower.db = {
   /** 全局统计 */
   getGlobalStats: function () {
     if (!this._client) return Promise.reject('no client');
-    return this._client.from('players').select('best_wave,total_kills')
+    return this._client.from('players').select('best_wave,total_kills,total_waves,last_seen')
       .then(function (r) {
         var data = r.data || [];
         var today = new Date();
