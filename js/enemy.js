@@ -9,7 +9,7 @@ Tower.enemy = {
   TYPES: {
     basic: {
       name: 'basic',
-      behaviour: 'charge',   // rush tower → explode on contact
+      behaviour: 'tank',    // sticks to tower, continuous ramming
       speed: 40,
       hpMul: 1,
       collisionDmg: 1,
