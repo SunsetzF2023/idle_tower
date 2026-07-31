@@ -216,6 +216,9 @@ Tower.game = {
     if (state.wave > state.bestWave) state.bestWave = state.wave;
     this._save(state);
 
+    // Check achievements
+    Tower.achievements.check(state);
+
     // Submit mission progress
     Tower.db.submitMissionProgress({
       kill_50: state.totalKills,

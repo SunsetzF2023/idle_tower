@@ -14,8 +14,9 @@ Tower.loop = {
   _spawnCount: 0,
   _spawnQueue: [],
   _waveElapsed: 0,
-  _rapidFireUntil: 0,       // Rapid Fire 结束时间戳
-  _mines: [],                // Land mines
+  _rapidFireUntil: 0,
+  _mines: [],
+  _missileTimer: 0,          // Cruise missile cooldown
 
   start: function (state) {
     this._lastTime = performance.now();
@@ -26,6 +27,7 @@ Tower.loop = {
     this._waveElapsed = 0;
     this._rapidFireUntil = 0;
     this._mines = [];
+    this._missileTimer = performance.now();
     state.enemyBullets = state.enemyBullets || [];
     this._tick(state);
   },
@@ -70,6 +72,11 @@ Tower.loop = {
 
     Tower.combat.updateParticles(state, dt);
     Tower.combat.updateDamageNumbers(state, dt);
+
+    if (!state._lastAchCheck || now - state._lastAchCheck > 5000) {
+      Tower.achievements.check(state);
+      state._lastAchCheck = now;
+    }
 
     if (!state._lastAutoSave || now - state._lastAutoSave > 10000) {
       Tower.game._save(state);
@@ -205,6 +212,35 @@ Tower.loop = {
       }
 
       self._fireBullets(state, towerPos, target, stats);
+    }
+
+    // ── 3.5 Cruise Missile ──
+    if (Tower.achievements.hasMissile()) {
+      var cd = Tower.achievements.missileCooldown();
+      if (now - self._missileTimer >= cd) {
+        // Find farthest enemy within range
+        var farTarget = null;
+        var farDist = 0;
+        for (var fi = 0; fi < state.enemies.length; fi++) {
+          var fe = state.enemies[fi];
+          if (!fe.alive) continue;
+          var fd = Tower.utils.dist(towerPos.x, towerPos.y, fe.x, fe.y);
+          if (fd <= stats.range && fd > farDist) { farDist = fd; farTarget = fe; }
+        }
+        if (farTarget) {
+          self._missileTimer = now;
+          state.bullets.push({
+            x: towerPos.x, y: towerPos.y,
+            targetId: farTarget.id,
+            targetX: farTarget.x, targetY: farTarget.y,
+            speed: 350, radius: 3,
+            damage: stats.damage * 3,
+            color: '#ff9e64',
+            alive: true,
+            isMissile: true
+          });
+        }
+      }
     }
 
     // ── 4. 子弹飞行 + 命中 ──

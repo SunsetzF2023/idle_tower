@@ -181,10 +181,30 @@ Tower.renderer = {
     for (var i = 0; i < bullets.length; i++) {
       var b = bullets[i];
       if (!b.alive) continue;
-      ctx.beginPath();
-      ctx.arc(b.x, b.y, 2, 0, Math.PI * 2);
-      ctx.fillStyle = '#c0caf5';
-      ctx.fill();
+      if (b.isMissile) {
+        // Orange triangle missile with glow
+        var tp = Tower.tower.position(this.canvas.width, this.canvas.height);
+        var angle = Tower.utils.angle(b.x, b.y, b.targetX || tp.x, b.targetY || tp.y);
+        var tipX = b.x + Math.cos(angle) * 6;
+        var tipY = b.y + Math.sin(angle) * 6;
+        ctx.beginPath();
+        ctx.moveTo(tipX, tipY);
+        ctx.lineTo(b.x + Math.cos(angle + 2.5) * 5, b.y + Math.sin(angle + 2.5) * 5);
+        ctx.lineTo(b.x + Math.cos(angle - 2.5) * 5, b.y + Math.sin(angle - 2.5) * 5);
+        ctx.closePath();
+        ctx.fillStyle = '#ff9e64';
+        ctx.fill();
+        // Glow
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, 4, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255,158,100,0.3)';
+        ctx.fill();
+      } else {
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, 2, 0, Math.PI * 2);
+        ctx.fillStyle = '#c0caf5';
+        ctx.fill();
+      }
     }
   },
 
