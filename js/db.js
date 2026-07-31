@@ -225,10 +225,10 @@ Tower.db = {
     if (!this._client) return Promise.reject('no client');
     var today = new Date().toISOString().slice(0, 10);
     var self = this;
-    return this._client.from('missions').select('*').eq('date', today).single()
+    return this._client.from('missions').select('*').eq('date', today).maybeSingle()
       .then(function (r) {
         if (r.data) return r.data.missions_data;
-        // 新的一天，生成任务
+        // New day, generate missions
         var shuffled = self._DAILY_MISSIONS.slice().sort(function () { return Math.random() - 0.5; });
         var fresh = {
           date: today,
@@ -249,7 +249,7 @@ Tower.db = {
   claimMission: function (missionId) {
     var self = this;
     var today = new Date().toISOString().slice(0, 10);
-    return this._client.from('missions').select('*').eq('date', today).single()
+    return this._client.from('missions').select('*').eq('date', today).maybeSingle()
       .then(function (r) {
         if (!r.data) return { error: 'no missions' };
         var data = r.data.missions_data;

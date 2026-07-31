@@ -275,7 +275,7 @@ Tower.panels = {
     var pass = document.getElementById('lb-pass').value;
     var msg = document.getElementById('lb-auth-msg');
     if (!user || !pass) { msg.textContent = 'fill in both fields'; return; }
-    if (pass.length < 4) { msg.textContent = 'password min 4 chars'; return; }
+    if (pass.length < 6) { msg.textContent = 'password min 6 chars'; return; }
     msg.textContent = '...';
     var self = this;
     Tower.db.signup(user, pass).then(function (r) {
