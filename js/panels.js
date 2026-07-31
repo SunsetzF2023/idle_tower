@@ -269,12 +269,18 @@ Tower.panels = {
         + 'style="width:100%;padding:4px 6px;background:var(--bg);border:1px solid var(--border);color:var(--text-bright);font-family:var(--mono);font-size:9px;border-radius:2px;margin-bottom:3px">'
         + '<textarea id="adm-body" placeholder="Message body" rows="2" '
         + 'style="width:100%;padding:4px 6px;background:var(--bg);border:1px solid var(--border);color:var(--text-bright);font-family:var(--mono);font-size:9px;border-radius:2px;margin-bottom:3px;resize:vertical"></textarea>'
-        + '<div style="display:flex;gap:3px;align-items:center">'
+        + '<div style="display:flex;gap:3px;align-items:center;margin-bottom:3px">'
         + '<input id="adm-coins" type="number" placeholder="Coins" value="0" '
         + 'style="width:60px;padding:4px 6px;background:var(--bg);border:1px solid var(--border);color:var(--orange);font-family:var(--mono);font-size:9px;border-radius:2px">'
         + '<button onclick="Tower.panels._sendMail()" '
-        + 'style="flex:1;padding:4px;background:var(--bg3);border:1px solid var(--orange);color:var(--orange);font-family:var(--mono);font-size:9px;cursor:pointer">📨 send to all</button>'
-        + '</div></div></div>';
+        + 'style="flex:1;padding:4px;background:var(--bg3);border:1px solid var(--green);color:var(--green);font-family:var(--mono);font-size:9px;cursor:pointer">📨 send to all</button>'
+        + '</div>'
+        + '<div id="adm-players" style="max-height:120px;overflow-y:auto;font-size:8px;color:var(--text);line-height:1.6">'
+        + '<div style="color:var(--text);opacity:0.4">loading players...</div>'
+        + '</div>'
+        + '<button id="adm-send-sel" onclick="Tower.panels._sendMail(true)" '
+        + 'style="width:100%;padding:3px;background:var(--bg3);border:1px solid var(--orange);color:var(--orange);font-family:var(--mono);font-size:9px;cursor:pointer;margin-top:3px;display:none">📨 send to selected</button>'
+        + '</div></div>';
     }
 
     document.getElementById('left-leaderboard').innerHTML = html;
@@ -284,6 +290,7 @@ Tower.panels = {
     this._loadGlobal();
     this._loadMissions();
     this._loadInbox();
+    this._loadAdminPlayers();
   },
 
   _doLogin: function () {
@@ -443,18 +450,42 @@ Tower.panels = {
     });
   },
 
-  _sendMail: function () {
+  _sendMail: function (selected) {
     var subj = document.getElementById('adm-subject').value.trim();
     var body = document.getElementById('adm-body').value.trim();
     var coins = parseInt(document.getElementById('adm-coins').value) || 0;
     if (!subj) return;
+    var toUsers = [];
+    if (selected) {
+      var checks = document.querySelectorAll('#adm-players input:checked');
+      for (var i = 0; i < checks.length; i++) { toUsers.push(checks[i].value); }
+      if (toUsers.length === 0) return;
+    }
     var self = this;
-    Tower.db.sendMail(subj, body, coins).then(function () {
+    Tower.db.sendMail(subj, body, coins, toUsers).then(function () {
       document.getElementById('adm-subject').value = '';
       document.getElementById('adm-body').value = '';
       document.getElementById('adm-coins').value = '0';
       self._loadInbox();
     });
+  },
+
+  _loadAdminPlayers: function () {
+    var el = document.getElementById('adm-players');
+    if (!el) return;
+    Tower.db.getLeaderboard('totalKills').then(function (data) {
+      if (!data || data.length === 0) { el.innerHTML = '<div style="color:var(--text);opacity:0.4">no players</div>'; return; }
+      var html = '';
+      for (var i = 0; i < data.length; i++) {
+        var p = data[i];
+        html += '<label style="display:flex;align-items:center;gap:4px;cursor:pointer">'
+          + '<input type="checkbox" value="' + p.id + '">'
+          + p.name + '<span style="opacity:0.4"> (wave ' + p.bestWave + ')</span>'
+          + '</label>';
+      }
+      el.innerHTML = html;
+      document.getElementById('adm-send-sel').style.display = 'block';
+    }).catch(function () {});
   },
 
   _claimMail: function (mailId) {

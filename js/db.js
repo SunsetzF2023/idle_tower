@@ -352,15 +352,16 @@ Tower.db = {
 
   /** ── Mail system ── */
 
-  /** Admin: send mail to all players */
-  sendMail: function (subject, body, coins) {
+  /** Admin: send mail (to all, or specific players) */
+  sendMail: function (subject, body, coins, toUsers) {
     if (!this._client) return Promise.reject('no client');
     var name = this.getName();
     return this._client.from('mail').insert({
       subject: subject,
       body: body || '',
       coins: coins || 0,
-      created_by: name
+      created_by: name,
+      to_users: toUsers || []
     });
   },
 
@@ -370,16 +371,16 @@ Tower.db = {
     var uid = this.getId();
     return this._client.from('mail').select('*').order('id', { ascending: false }).limit(30)
       .then(function (r) {
-        return (r.data || []).map(function (m) {
+        return (r.data || []).filter(function (m) {
+          // Show if to_users is empty (everyone) or includes this user
+          var to = m.to_users || [];
+          return to.length === 0 || to.indexOf(uid) !== -1;
+        }).map(function (m) {
           var claimed = (m.claimed_by || []).indexOf(uid) !== -1;
           return {
-            id: m.id,
-            subject: m.subject,
-            body: m.body,
-            coins: m.coins,
-            sent_at: m.sent_at,
-            created_by: m.created_by,
-            claimed: claimed
+            id: m.id, subject: m.subject, body: m.body,
+            coins: m.coins, sent_at: m.sent_at,
+            created_by: m.created_by, claimed: claimed
           };
         });
       });
