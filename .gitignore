@@ -5,3 +5,8 @@ Thumbs.db
 .env.*
 node_modules/
 server/data/
+release/
+dist/
+*.exe
+*.dmg
+*.AppImage

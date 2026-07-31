@@ -1,0 +1,45 @@
+{
+  "name": "the-tower-clone",
+  "version": "1.0.0",
+  "description": "The Tower — Idle Tower Defense",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --win --mac --linux",
+    "build:win": "electron-builder --win",
+    "build:mac": "electron-builder --mac",
+    "build:linux": "electron-builder --linux"
+  },
+  "build": {
+    "appId": "com.idletower.clone",
+    "productName": "The Tower",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "**/*",
+      "!node_modules",
+      "!server",
+      "!supabase",
+      "!docs",
+      "!.github/workflows/deploy.yml",
+      "!release"
+    ],
+    "win": {
+      "target": "portable",
+      "icon": null
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": null
+    },
+    "linux": {
+      "target": "AppImage",
+      "icon": null
+    }
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.0.0"
+  }
+}
