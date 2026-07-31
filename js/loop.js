@@ -372,7 +372,42 @@ Tower.loop = {
       }
     }
 
-    // ── 7. Land mines (spawn on enemy death → stored in _mines) ──
+    // ── 7. Orbs rotation + collision ──
+    if (stats.orbs > 0) {
+      state._orbs = state._orbs || [];
+      // Init orbs if needed
+      while (state._orbs.length < stats.orbs) {
+        state._orbs.push({ angle: (Math.PI * 2 / stats.orbs) * state._orbs.length });
+      }
+      while (state._orbs.length > stats.orbs) { state._orbs.pop(); }
+      var orbDist = stats.range * 0.55; // orbit at 55% of range
+      var orbRpm = stats.orbSpeed || 0.4;
+      for (var oi = 0; oi < state._orbs.length; oi++) {
+        var orb = state._orbs[oi];
+        orb.angle += (orbRpm / 60) * Math.PI * 2 * dt; // rpm → radians/sec
+        if (orb.angle > Math.PI * 2) orb.angle -= Math.PI * 2;
+        orb.x = towerPos.x + Math.cos(orb.angle) * orbDist;
+        orb.y = towerPos.y + Math.sin(orb.angle) * orbDist;
+        // Collision with enemies
+        for (var oe = state.enemies.length - 1; oe >= 0; oe--) {
+          var oee = state.enemies[oe];
+          if (!oee.alive) continue;
+          if (Tower.utils.dist(orb.x, orb.y, oee.x, oee.y) < 7 + oee.radius) {
+            var orbDmg = stats.damage;
+            Tower.enemy.takeDamage(oee, orbDmg);
+            Tower.combat.spawnDamageNumber(state, oee.x, oee.y, '🔵' + orbDmg, '#7dcfff');
+            if (oee.hp <= 0) {
+              oee.alive = false;
+              self._onEnemyKilled(state, oee);
+            }
+          }
+        }
+      }
+    } else {
+      state._orbs = [];
+    }
+
+    // ── 8. Land mines ──
     // Mines trigger when enemy walks over them
     for (var mi = self._mines.length - 1; mi >= 0; mi--) {
       var mine = self._mines[mi];

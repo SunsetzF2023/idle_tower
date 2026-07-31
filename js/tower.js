@@ -234,6 +234,19 @@ Tower.tower = {
           unlock: 300,
           format: function (v) { return (v || 0).toFixed(1) + '%'; }
         },
+        orbs: {
+          name: 'Orbs', icon: '🔵',
+          base: 0, perLv: 1, costBase: 3000, maxLv: 4,
+          desc: '+1 rotating orb. Deals 1× tower dmg on contact. Max 4',
+          unlock: 500
+        },
+        orbSpeed: {
+          name: 'Orb Speed', icon: '🌀',
+          base: 0.4, perLv: 0.15, costBase: 125, maxLv: 38,
+          desc: '+0.15 rpm. Base 0.4 rpm. Max 6.1 rpm',
+          unlock: 500,
+          format: function (v) { return v.toFixed(1) + ' rpm'; }
+        },
         landMineDamage: {
           name: 'Land Mine Damage', icon: '🧨',
           base: 100, perLv: 10, costBase: 500, maxLv: 200,
@@ -377,6 +390,8 @@ Tower.tower = {
     var totalKbChance = wsVal('knockbackChance', def.knockbackChance);
     var totalKbForce = wsVal('knockbackForce', def.knockbackForce);
     var totalMineChance = wsVal('landMineChance', def.landMineChance);
+    var totalOrbs = wsVal('orbs', def.orbs);
+    var totalOrbSpeed = wsVal('orbSpeed', def.orbSpeed);
     var totalMineDamage = wsVal('landMineDamage', def.landMineDamage);
     var totalDeathDefy = wsVal('deathDefy', def.deathDefy);
 
@@ -413,6 +428,8 @@ Tower.tower = {
       lifestealPercent: Math.min(4.0, totalLs),
       knockbackChance: Math.min(80, totalKbChance),
       knockbackForce: Math.min(6.4, totalKbForce),
+      orbs: Math.min(4, totalOrbs),
+      orbSpeed: Math.min(6.1, totalOrbSpeed),   // rotations per minute
       landMineChance: Math.min(30, totalMineChance),
       landMineDamage: Math.min(2100, totalMineDamage),
       deathDefy: Math.min(30, totalDeathDefy),

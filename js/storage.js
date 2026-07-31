@@ -35,7 +35,7 @@ Tower.storage = {
       bestWave: 0,
       totalKills: 0,
       totalWaves: 0,
-      killsByType: { basic: 0, fast: 0, ranged: 0, tank: 0, boss: 0, hellfire: 0 },
+      killsByType: { basic: 0, fast: 0, ranged: 0, tank: 0, boss: 0, hellfire: 0, goblin: 0 },
       coins: 0,
       workshop: {}
     };

@@ -62,6 +62,9 @@ Tower.renderer = {
     // 层 7: 粒子
     this._drawParticles(state);
 
+    // 层 7: Orbs
+    this._drawOrbs(state);
+
     // 层 7.5: 地雷
     this._drawMines();
 
@@ -124,13 +127,28 @@ Tower.renderer = {
     for (var i = 0; i < enemies.length; i++) {
       var e = enemies[i];
       if (!e.alive) continue;
-      // 描边圆
-      ctx.beginPath();
-      ctx.arc(e.x, e.y, e.radius, 0, Math.PI * 2);
-      ctx.strokeStyle = e.color;
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
-      // 血条
+      if (e.type === 'goblin') {
+        // Gold filled circle
+        ctx.beginPath();
+        ctx.arc(e.x, e.y, e.radius, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255,215,0,0.25)';
+        ctx.fill();
+        ctx.strokeStyle = '#ffd700';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        // Coin symbol
+        ctx.font = (e.radius * 0.9) + 'px Consolas';
+        ctx.fillStyle = '#ffd700';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('¢', e.x, e.y);
+      } else {
+        ctx.beginPath();
+        ctx.arc(e.x, e.y, e.radius, 0, Math.PI * 2);
+        ctx.strokeStyle = e.color;
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+      }
       this._drawEnemyHealthBar(e);
     }
   },
@@ -219,6 +237,25 @@ Tower.renderer = {
       ctx.fill();
     }
     ctx.globalAlpha = 1;
+  },
+
+  _drawOrbs: function (state) {
+    var ctx = this.ctx;
+    var orbs = state._orbs || [];
+    for (var i = 0; i < orbs.length; i++) {
+      var o = orbs[i];
+      // Glow ring
+      ctx.beginPath();
+      ctx.arc(o.x, o.y, 7, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(125,207,255,0.5)';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      // Core
+      ctx.beginPath();
+      ctx.arc(o.x, o.y, 4, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(125,207,255,0.8)';
+      ctx.fill();
+    }
   },
 
   _drawMines: function () {

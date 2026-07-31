@@ -7,9 +7,21 @@ Tower.enemy = {
 
   /** Enemy type definitions */
   TYPES: {
+    goblin: {
+      name: 'goblin',
+      behaviour: 'charge',   // harmless coin piñata
+      speed: 35,
+      hpMul: 0.5,
+      collisionDmg: 0,       // no damage — pure reward
+      cash: 1,
+      coins: 15,
+      radius: 10,
+      color: '#ffd700',      // gold
+      shape: 'goblin'
+    },
     basic: {
       name: 'basic',
-      behaviour: 'tank',    // sticks to tower, continuous ramming
+      behaviour: 'tank',
       speed: 40,
       hpMul: 1,
       collisionDmg: 1,
@@ -196,6 +208,9 @@ Tower.enemy = {
   /** Get wave enemy type composition */
   getWaveComposition: function (wave) {
     var comp = [];
+
+    // Coin goblin every wave (~10% of spawns)
+    comp.push({ type: 'goblin', count: Math.max(1, Math.floor(wave * 0.3)) });
 
     // Boss every 10 waves
     if (wave % 10 === 0) {
