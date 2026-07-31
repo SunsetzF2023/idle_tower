@@ -89,7 +89,7 @@ Tower.enemy = {
       coins: 12,
       radius: 13,
       color: '#ff6b35',
-      attackInterval: 800,    // ms — deliberate ticks
+      attackInterval: 200,    // ms — smooth continuous beam ticks
       bulletDamage: 1,        // base, ramps up
       bulletSpeed: 9999,      // instant beam (handled in loop)
       bulletColor: '#ff4500',

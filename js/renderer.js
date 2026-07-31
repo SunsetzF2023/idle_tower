@@ -47,6 +47,9 @@ Tower.renderer = {
     // 层 3: 子弹
     this._drawBullets(state);
 
+    // 层 3.5: Hellfire beams (before enemy bullets)
+    this._drawBeams(state);
+
     // 层 3.5: 敌人子弹
     this._drawEnemyBullets(state);
 
@@ -185,29 +188,55 @@ Tower.renderer = {
     }
   },
 
+  _drawBeams: function (state) {
+    var ctx = this.ctx;
+    var tp = Tower.tower.position(this.canvas.width, this.canvas.height);
+    for (var i = 0; i < state.enemies.length; i++) {
+      var e = state.enemies[i];
+      if (!e.alive || e.type !== 'hellfire' || !e.stopped) continue;
+      // Outer glow
+      ctx.beginPath();
+      ctx.moveTo(e.x, e.y);
+      ctx.lineTo(tp.x, tp.y);
+      ctx.strokeStyle = 'rgba(255,69,0,0.2)';
+      ctx.lineWidth = 6;
+      ctx.stroke();
+      // Mid glow
+      ctx.beginPath();
+      ctx.moveTo(e.x, e.y);
+      ctx.lineTo(tp.x, tp.y);
+      ctx.strokeStyle = 'rgba(255,140,0,0.4)';
+      ctx.lineWidth = 3;
+      ctx.stroke();
+      // Core beam
+      ctx.beginPath();
+      ctx.moveTo(e.x, e.y);
+      ctx.lineTo(tp.x, tp.y);
+      ctx.strokeStyle = 'rgba(255,200,50,0.7)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      // Impact glow at tower
+      ctx.beginPath();
+      ctx.arc(tp.x, tp.y, 6, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255,100,0,0.3)';
+      ctx.fill();
+    }
+  },
+
   _drawEnemyBullets: function (state) {
     var ctx = this.ctx;
     var bullets = state.enemyBullets || [];
     for (var i = 0; i < bullets.length; i++) {
       var b = bullets[i];
       if (!b.alive) continue;
-      if (b.isBeam) {
-        // Hellfire beam: line from enemy to tower with glow
-        var tp = Tower.tower.position(this.canvas.width, this.canvas.height);
-        ctx.beginPath(); ctx.moveTo(b.x, b.y); ctx.lineTo(tp.x, tp.y);
-        ctx.strokeStyle = 'rgba(255,69,0,0.3)'; ctx.lineWidth = 4; ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(b.x, b.y); ctx.lineTo(tp.x, tp.y);
-        ctx.strokeStyle = 'rgba(255,140,0,0.8)'; ctx.lineWidth = 1.5; ctx.stroke();
-      } else {
-        ctx.beginPath();
-        ctx.arc(b.x, b.y, b.radius + 2, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(187,154,247,0.25)';
-        ctx.fill();
-        ctx.beginPath();
-        ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
-        ctx.fillStyle = b.color || '#bb9af7';
-        ctx.fill();
-      }
+      ctx.beginPath();
+      ctx.arc(b.x, b.y, b.radius + 2, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(187,154,247,0.25)';
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
+      ctx.fillStyle = b.color || '#bb9af7';
+      ctx.fill();
     }
   },
 

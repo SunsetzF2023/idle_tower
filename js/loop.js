@@ -311,29 +311,32 @@ Tower.loop = {
       if (!ranged._lastAttack) ranged._lastAttack = now;
       if (now - ranged._lastAttack >= (ranged.attackInterval || 2000)) {
         ranged._lastAttack = now;
-        // Hellfire ramping damage: starts low, increases over time
-        var dmg = ranged.bulletDamage || 1;
         if (ranged.type === 'hellfire') {
+          // Continuous beam — apply damage directly, no bullet
           if (!ranged.rampStart) ranged.rampStart = now;
           var elapsed = (now - ranged.rampStart) / 1000;
-          dmg = Math.min(dmg + elapsed * (ranged.rampRate || 0.8), ranged.maxDamage || 8);
+          var dmg = Math.min(ranged.bulletDamage + elapsed * (ranged.rampRate || 0.3), ranged.maxDamage || 4);
+          dmg = Math.ceil(dmg);
           ranged.currentRampDmg = dmg;
+          state.towerHP -= dmg;
+          if (state.towerHP < 0) state.towerHP = 0;
+          Tower.combat.spawnDamageNumber(state, towerPos.x, towerPos.y - 10, '-' + dmg, '#ff4500');
+          state._flashTimer = 0.3;
+          if (state.towerHP <= 0) {
+            state._current = 'game_over';
+            Tower.game.onGameOver(state);
+            return;
+          }
+        } else {
+          state.enemyBullets.push({
+            x: ranged.x, y: ranged.y,
+            targetX: towerPos.x, targetY: towerPos.y,
+            speed: ranged.bulletSpeed || 150,
+            damage: ranged.bulletDamage || 1,
+            color: ranged.bulletColor || '#bb9af7',
+            radius: 2.5, alive: true
+          });
         }
-        // Hellfire beam is instant (speed 9999)
-        var isBeam = ranged.type === 'hellfire';
-        state.enemyBullets.push({
-          x: ranged.x,
-          y: ranged.y,
-          targetX: towerPos.x,
-          targetY: towerPos.y,
-          speed: ranged.bulletSpeed || 150,
-          damage: dmg,
-          color: ranged.bulletColor || '#bb9af7',
-          radius: isBeam ? 1.5 : 2.5,
-          alive: true,
-          isBeam: isBeam,
-          sourceId: ranged.id
-        });
       }
     }
 
