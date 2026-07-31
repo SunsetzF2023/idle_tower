@@ -313,7 +313,7 @@ Tower.panels = {
       var el = document.getElementById('lb-list');
       if (!el) return;
       if (!data || data.length === 0) {
-        el.innerHTML = '<div style="color:var(--text);opacity:0.4;text-align:center;padding:10px">no players yet — be the first!</div>';
+        el.innerHTML = '<div style="color:var(--text);opacity:0.4;text-align:center;padding:10px">no players yet — be the first!<br><span style="font-size:8px">Did you run the SQL migration in Supabase?</span></div>';
         return;
       }
       var html = '';
@@ -331,9 +331,9 @@ Tower.panels = {
           + '</div>';
       }
       el.innerHTML = html;
-    }).catch(function () {
+    }).catch(function (err) {
       var el = document.getElementById('lb-list');
-      if (el) el.innerHTML = '<div style="color:var(--red);opacity:0.5;text-align:center;padding:10px">server offline</div>';
+      if (el) el.innerHTML = '<div style="color:var(--red);opacity:0.5;text-align:center;padding:10px;font-size:8px">' + (err.message || err || 'error') + '</div>';
     });
   },
 
@@ -345,9 +345,9 @@ Tower.panels = {
         + '<div>Active today: <b style="color:var(--green)">' + (data.activeToday||0) + '</b></div>'
         + '<div>Top best wave: <b style="color:var(--amber)">' + (data.topBestWave||0) + '</b></div>'
         + '<div>Total kills: <b style="color:var(--text-bright)">' + (data.totalKillsAll||0).toLocaleString() + '</b></div>';
-    }).catch(function () {
+    }).catch(function (err) {
       var el = document.getElementById('lb-global');
-      if (el) el.innerHTML = '<div style="color:var(--red);opacity:0.5">server offline</div>';
+      if (el) el.innerHTML = '<div style="color:var(--red);opacity:0.5;font-size:8px">' + (err.message || err || 'error') + '</div>';
     });
   },
 
@@ -378,9 +378,9 @@ Tower.panels = {
           + '</div></div>';
       }
       el.innerHTML = html;
-    }).catch(function () {
+    }).catch(function (err) {
       var el = document.getElementById('lb-missions');
-      if (el) el.innerHTML = '<div style="color:var(--red);opacity:0.5">server offline</div>';
+      if (el) el.innerHTML = '<div style="color:var(--red);opacity:0.5;font-size:8px">' + (err.message || err || 'error') + '</div>';
     });
   },
 
