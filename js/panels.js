@@ -253,12 +253,37 @@ Tower.panels = {
     html += '<div style="color:var(--text);opacity:0.4">loading...</div>';
     html += '</div></div>';
 
+    // ── Inbox ──
+    html += '<div class="panel-section">';
+    html += '<div class="panel-title">✉ INBOX</div>';
+    html += '<div id="lb-inbox" style="font-size:10px;color:var(--text);line-height:1.8">';
+    html += '<div style="color:var(--text);opacity:0.4">loading...</div>';
+    html += '</div></div>';
+
+    // ── Admin: compose mail (only SunsetzF2023) ──
+    if (Tower.db.getName() === 'SunsetzF2023') {
+      html += '<div class="panel-section">';
+      html += '<div class="panel-title">📝 ADMIN</div>';
+      html += '<div style="font-size:10px;color:var(--text)">'
+        + '<input id="adm-subject" type="text" placeholder="Subject" '
+        + 'style="width:100%;padding:4px 6px;background:var(--bg);border:1px solid var(--border);color:var(--text-bright);font-family:var(--mono);font-size:9px;border-radius:2px;margin-bottom:3px">'
+        + '<textarea id="adm-body" placeholder="Message body" rows="2" '
+        + 'style="width:100%;padding:4px 6px;background:var(--bg);border:1px solid var(--border);color:var(--text-bright);font-family:var(--mono);font-size:9px;border-radius:2px;margin-bottom:3px;resize:vertical"></textarea>'
+        + '<div style="display:flex;gap:3px;align-items:center">'
+        + '<input id="adm-coins" type="number" placeholder="Coins" value="0" '
+        + 'style="width:60px;padding:4px 6px;background:var(--bg);border:1px solid var(--border);color:var(--orange);font-family:var(--mono);font-size:9px;border-radius:2px">'
+        + '<button onclick="Tower.panels._sendMail()" '
+        + 'style="flex:1;padding:4px;background:var(--bg3);border:1px solid var(--orange);color:var(--orange);font-family:var(--mono);font-size:9px;cursor:pointer">📨 send to all</button>'
+        + '</div></div></div>';
+    }
+
     document.getElementById('left-leaderboard').innerHTML = html;
 
     // Load data
     this._loadLB('bestWave');
     this._loadGlobal();
     this._loadMissions();
+    this._loadInbox();
   },
 
   _doLogin: function () {
@@ -385,6 +410,65 @@ Tower.panels = {
     }).catch(function (err) {
       var el = document.getElementById('lb-missions');
       if (el) el.innerHTML = '<div style="color:var(--red);opacity:0.5;font-size:8px">' + (err.message || err || 'error') + '</div>';
+    });
+  },
+
+  _loadInbox: function () {
+    Tower.db.getInbox().then(function (data) {
+      var el = document.getElementById('lb-inbox');
+      if (!el) return;
+      if (!data || data.length === 0) {
+        el.innerHTML = '<div style="color:var(--text);opacity:0.4">no mail yet</div>';
+        return;
+      }
+      var html = '';
+      for (var i = 0; i < data.length; i++) {
+        var m = data[i];
+        var date = m.sent_at ? new Date(m.sent_at).toISOString().slice(0, 10) : '';
+        html += '<div style="margin-bottom:6px;padding:4px;background:var(--bg);border-radius:3px;'
+          + (m.claimed ? 'opacity:0.4' : 'border-left:2px solid var(--orange)') + '">'
+          + '<div style="font-size:10px;color:var(--text-bright)">' + (m.subject || '(no subject)') + '</div>'
+          + (m.body ? '<div style="font-size:9px;color:var(--text);opacity:0.7;margin:2px 0">' + m.body + '</div>' : '')
+          + '<div style="display:flex;justify-content:space-between;align-items:center;font-size:8px;opacity:0.5">'
+          + '<span>' + date + ' · ' + (m.created_by || 'System') + '</span>'
+          + (m.coins > 0 && !m.claimed
+            ? '<span style="color:var(--orange);cursor:pointer;font-size:9px" onclick="Tower.panels._claimMail(' + m.id + ')">🪙' + m.coins + ' claim</span>'
+            : (m.claimed ? '<span style="color:var(--green)">✓ claimed</span>' : ''))
+          + '</div></div>';
+      }
+      el.innerHTML = html;
+    }).catch(function () {
+      var el = document.getElementById('lb-inbox');
+      if (el) el.innerHTML = '';
+    });
+  },
+
+  _sendMail: function () {
+    var subj = document.getElementById('adm-subject').value.trim();
+    var body = document.getElementById('adm-body').value.trim();
+    var coins = parseInt(document.getElementById('adm-coins').value) || 0;
+    if (!subj) return;
+    var self = this;
+    Tower.db.sendMail(subj, body, coins).then(function () {
+      document.getElementById('adm-subject').value = '';
+      document.getElementById('adm-body').value = '';
+      document.getElementById('adm-coins').value = '0';
+      self._loadInbox();
+    });
+  },
+
+  _claimMail: function (mailId) {
+    var self = this;
+    Tower.db.claimMail(mailId).then(function (r) {
+      if (r && r.ok) {
+        var state = Tower.game.state;
+        if (state && r.coins) {
+          state.coins += r.coins;
+          Tower.game._save(state);
+          Tower.panels.updateLeft(state);
+        }
+        self._loadInbox();
+      }
     });
   },
 

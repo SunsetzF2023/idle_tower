@@ -348,5 +348,68 @@ Tower.db = {
               });
           });
       });
+  },
+
+  /** ── Mail system ── */
+
+  /** Admin: send mail to all players */
+  sendMail: function (subject, body, coins) {
+    if (!this._client) return Promise.reject('no client');
+    var name = this.getName();
+    return this._client.from('mail').insert({
+      subject: subject,
+      body: body || '',
+      coins: coins || 0,
+      created_by: name
+    });
+  },
+
+  /** Get all mail (newest first). Returns unread status per player. */
+  getInbox: function () {
+    if (!this._client) return Promise.reject('no client');
+    var uid = this.getId();
+    return this._client.from('mail').select('*').order('id', { ascending: false }).limit(30)
+      .then(function (r) {
+        return (r.data || []).map(function (m) {
+          var claimed = (m.claimed_by || []).indexOf(uid) !== -1;
+          return {
+            id: m.id,
+            subject: m.subject,
+            body: m.body,
+            coins: m.coins,
+            sent_at: m.sent_at,
+            created_by: m.created_by,
+            claimed: claimed
+          };
+        });
+      });
+  },
+
+  /** Claim coins from a mail */
+  claimMail: function (mailId) {
+    if (!this._client) return Promise.reject('no client');
+    var uid = this.getId();
+    if (!uid) return Promise.reject('not logged in');
+    var self = this;
+    // Get mail, check not claimed, add coins
+    return this._client.from('mail').select('*').eq('id', mailId).single()
+      .then(function (r) {
+        var m = r.data;
+        if (!m) return { error: 'mail not found' };
+        if ((m.claimed_by || []).indexOf(uid) !== -1) return { error: 'already claimed' };
+        var claimed = (m.claimed_by || []).concat([uid]);
+        return self._client.from('mail').update({ claimed_by: claimed }).eq('id', mailId)
+          .then(function () {
+            if (m.coins > 0) {
+              return self._client.from('players').select('total_coins').eq('user_id', uid).single()
+                .then(function (pr) {
+                  var coins = (pr.data ? pr.data.total_coins : 0) + m.coins;
+                  return self._client.from('players').update({ total_coins: coins }).eq('user_id', uid)
+                    .then(function () { return { ok: true, coins: m.coins }; });
+                });
+            }
+            return { ok: true, coins: 0 };
+          });
+      });
   }
 };
