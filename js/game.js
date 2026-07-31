@@ -9,6 +9,37 @@ Tower.game = {
     Tower.renderer.init('game-canvas');
     Tower.db.init();
 
+    // Load cloud stats if logged in (merge with local)
+    if (Tower.db.isLoggedIn()) {
+      var self = this;
+      Tower.db.loadStats().then(function (cloud) {
+        if (cloud) {
+          // Merge: take max of cloud vs local
+          var save = Tower.storage.load(Tower.storage.defaults());
+          save.bestWave = Math.max(save.bestWave || 0, cloud.bestWave);
+          save.totalWaves = Math.max(save.totalWaves || 0, cloud.totalWaves);
+          save.totalKills = Math.max(save.totalKills || 0, cloud.totalKills);
+          save.coins = Math.max(save.coins || 0, cloud.coins || 0);
+          if (cloud.killsByType) {
+            save.killsByType = save.killsByType || {};
+            for (var k in cloud.killsByType) {
+              save.killsByType[k] = Math.max(save.killsByType[k] || 0, cloud.killsByType[k] || 0);
+            }
+          }
+          Tower.storage.save(save);
+          // Reload state with merged data
+          if (self.state) {
+            self.state.bestWave = save.bestWave;
+            self.state.totalWaves = save.totalWaves;
+            self.state.totalKills = save.totalKills;
+            self.state.coins = save.coins;
+            self.state.killsByType = save.killsByType;
+            Tower.panels.updateLeft(self.state);
+          }
+        }
+      }).catch(function () {});
+    }
+
     var save = Tower.storage.load(Tower.storage.defaults());
 
     var state = {

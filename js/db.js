@@ -205,6 +205,25 @@ Tower.db = {
       });
   },
 
+  /** Load player stats from Supabase (cross-device sync) */
+  loadStats: function () {
+    if (!this._client) return Promise.reject('no client');
+    var uid = this.getId();
+    if (!uid) return Promise.reject('not logged in');
+    return this._client.from('players').select('*').eq('user_id', uid).maybeSingle()
+      .then(function (r) {
+        if (!r.data) return null;
+        return {
+          bestWave: r.data.best_wave || 0,
+          totalWaves: r.data.total_waves || 0,
+          totalKills: r.data.total_kills || 0,
+          killsByType: r.data.kills_by_type || {},
+          coins: r.data.total_coins || 0,
+          gamesPlayed: r.data.games_played || 0
+        };
+      });
+  },
+
   /** 排行榜 */
   getLeaderboard: function (type) {
     if (!this._client) return Promise.reject('no client');
