@@ -77,7 +77,7 @@ Tower.db = {
   signup: function (username, password) {
     var self = this;
     if (!this._client) return Promise.reject('no client');
-    var email = username + '@tower.user';
+    var email = username.indexOf('@') !== -1 ? username : username + '@tower.user';
     return this._client.auth.signUp({ email: email, password: password })
       .then(function (r) {
         if (r.error) return { error: r.error.message };
@@ -97,7 +97,7 @@ Tower.db = {
   signin: function (username, password) {
     var self = this;
     if (!this._client) return Promise.reject('no client');
-    var email = username + '@tower.user';
+    var email = username.indexOf('@') !== -1 ? username : username + '@tower.user';
     return this._client.auth.signInWithPassword({ email: email, password: password })
       .then(function (r) {
         if (r.error) return { error: r.error.message };
