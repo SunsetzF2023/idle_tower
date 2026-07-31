@@ -119,13 +119,8 @@ Tower.db = {
         var name = meta.user_name || meta.full_name || user.email || 'Player';
         self._setCachedUser({ id: user.id, name: name });
         self._saveSession();
-        // Ensure players row exists (trigger may have missed existing users)
-        self._client.from('players').select('user_id').eq('user_id', user.id).maybeSingle()
-          .then(function (pr) {
-            if (!pr.data) {
-              self._client.from('players').insert({ user_id: user.id, username: name });
-            }
-          });
+        // Ensure players row via RPC (SECURITY DEFINER, bypasses RLS)
+        self._client.rpc('ensure_player', { uid: user.id, uname: name });
       }
     }).catch(function () {});
   },
