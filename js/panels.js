@@ -202,7 +202,11 @@ Tower.panels = {
         + '</div>';
     } else {
       html += '<div style="font-size:10px;color:var(--text)">'
-        + '<input id="lb-user" type="text" placeholder="username" '
+        + '<button onclick="Tower.db.signInWithGitHub()" '
+        + 'style="width:100%;padding:6px;background:#24292e;border:1px solid #444;color:#fff;font-family:var(--mono);font-size:10px;cursor:pointer;border-radius:3px;margin-bottom:6px">'
+        + '🔐 Sign in with GitHub</button>'
+        + '<div style="text-align:center;color:var(--text);opacity:0.3;font-size:8px;margin-bottom:6px">— or email —</div>'
+        + '<input id="lb-user" type="text" placeholder="username or email" '
         + 'style="width:100%;padding:4px 6px;background:var(--bg);border:1px solid var(--border);color:var(--text-bright);font-family:var(--mono);font-size:9px;border-radius:2px;margin-bottom:3px">'
         + '<input id="lb-pass" type="password" placeholder="password" '
         + 'style="width:100%;padding:4px 6px;background:var(--bg);border:1px solid var(--border);color:var(--text-bright);font-family:var(--mono);font-size:9px;border-radius:2px;margin-bottom:3px">'

@@ -20,8 +20,8 @@ Tower.db = {
     }
     if (window.supabase) {
       this._client = window.supabase.createClient(this.SUPABASE_URL, this.SUPABASE_KEY);
-      // 恢复之前的 session
       this._restoreSession();
+      this.handleOAuthCallback();
       return true;
     }
     return false;
@@ -89,6 +89,30 @@ Tower.db = {
         self._saveSession();
         return { ok: true, playerId: uid, username: username };
       });
+  },
+
+  /** GitHub OAuth login */
+  signInWithGitHub: function () {
+    if (!this._client) return;
+    return this._client.auth.signInWithOAuth({
+      provider: 'github',
+      options: { redirectTo: window.location.origin + window.location.pathname }
+    });
+  },
+
+  /** Handle OAuth callback — called on page load */
+  handleOAuthCallback: function () {
+    var self = this;
+    if (!this._client) return;
+    this._client.auth.getSession().then(function (r) {
+      if (r.data && r.data.session) {
+        var user = r.data.session.user;
+        var meta = user.user_metadata || {};
+        var name = meta.user_name || meta.full_name || user.email || 'Player';
+        self._setCachedUser({ id: user.id, name: name });
+        self._saveSession();
+      }
+    }).catch(function () {});
   },
 
   /** 登录 */

@@ -48,7 +48,12 @@ CREATE OR REPLACE FUNCTION handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
   INSERT INTO public.players (user_id, username)
-  VALUES (NEW.id, coalesce(NEW.raw_user_meta_data->>'username', 'Player'));
+  VALUES (NEW.id, coalesce(
+    NEW.raw_user_meta_data->>'username',
+    NEW.raw_user_meta_data->>'user_name',
+    NEW.raw_user_meta_data->>'full_name',
+    'Player'
+  ));
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
