@@ -62,8 +62,10 @@ Tower.loop = {
     }
 
     if (state._current === 'playing') {
-      self._waveElapsed += dt * 1000;
-      self._updatePlaying(state, dt, now);
+      var stats = Tower.tower.getStats(state);
+      var gameDt = dt * (stats.gameSpeed || 1.0);
+      self._waveElapsed += gameDt * 1000;
+      self._updatePlaying(state, gameDt, now);
     }
 
     Tower.combat.updateParticles(state, dt);

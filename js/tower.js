@@ -279,6 +279,13 @@ Tower.tower = {
           desc: '+4 cash per wave start. Max +596',
           unlock: 0
         },
+        gameSpeed: {
+          name: 'Game Speed ⏩', icon: '⏩',
+          base: 1.0, perLv: 1.0, costBase: 1000, maxLv: 1,
+          desc: 'Unlock 2× game speed. Everything moves twice as fast.',
+          unlock: 0,
+          format: function (v) { return v.toFixed(0) + '×'; }
+        },
         startCash: {
           name: 'Starting Cash', icon: '💰',
           base: 0, perLv: 5, costBase: 30, maxLv: 20,
@@ -437,6 +444,7 @@ Tower.tower = {
       cashBonus: totalCashBonus,
       cashPerWave: Math.floor(totalCashWave),
       coinsPerKill: totalCpk,
+      gameSpeed: (ws.gameSpeed || 0) >= 1 ? 2.0 : 1.0,
       coinsPerWave: Math.floor(totalCoinsWave),
       freeAttackChance: Math.min(49.5, totalFreeAtk),
       freeDefenseChance: Math.min(49.5, totalFreeDef),
