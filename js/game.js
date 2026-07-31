@@ -72,7 +72,7 @@ Tower.game = {
       bestWave: save.bestWave || 0,
       totalKills: save.totalKills || 0,
       totalWaves: save.totalWaves || 0,
-      killsByType: save.killsByType || { basic: 0, fast: 0, ranged: 0, tank: 0, boss: 0, hellfire: 0, goblin: 0 },
+      killsByType: save.killsByType || { basic: 0, fast: 0, ranged: 0, tank: 0, boss: 0, hellfire: 0, goblin: 0, splitter: 0, mini: 0 },
       waveKills: 0,
 
       // Entity pools

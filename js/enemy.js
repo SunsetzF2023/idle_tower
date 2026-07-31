@@ -9,15 +9,40 @@ Tower.enemy = {
   TYPES: {
     goblin: {
       name: 'goblin',
-      behaviour: 'charge',   // harmless coin piñata
+      behaviour: 'charge',
       speed: 35,
       hpMul: 0.5,
-      collisionDmg: 0,       // no damage — pure reward
+      collisionDmg: 0,
       cash: 1,
       coins: 15,
       radius: 10,
-      color: '#ffd700',      // gold
-      shape: 'goblin'
+      color: '#ffd700'
+    },
+    splitter: {
+      name: 'splitter',
+      behaviour: 'charge',    // walks to tower, explodes into minis
+      speed: 25,
+      hpMul: 4,
+      collisionDmg: 4,
+      cash: 3,
+      coins: 5,
+      radius: 14,
+      color: '#7dcfff'        // cyan diamond
+    },
+    mini: {
+      name: 'mini',
+      behaviour: 'ranged',    // split offspring — walks to range, shoots
+      speed: 55,
+      hpMul: 1,
+      collisionDmg: 1,
+      cash: 0,
+      coins: 0,
+      radius: 7,
+      color: '#ffcc00',       // yellow triangle
+      attackInterval: 2500,   // shoot every 2.5s
+      bulletDamage: 1,
+      bulletSpeed: 200,
+      bulletColor: '#ffcc00'
     },
     basic: {
       name: 'basic',
@@ -225,6 +250,11 @@ Tower.enemy = {
     // Ranged from wave 5
     if (wave >= 5) {
       comp.push({ type: 'ranged', count: Math.max(1, Math.floor((wave - 4) * 0.5)) });
+    }
+
+    // Splitter from wave 6
+    if (wave >= 6) {
+      comp.push({ type: 'splitter', count: Math.max(1, Math.floor((wave - 5) * 0.4)) });
     }
 
     // Tank from wave 8

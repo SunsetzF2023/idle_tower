@@ -525,6 +525,17 @@ Tower.loop = {
     if (state.killsByType[enemy.type] !== undefined) {
       state.killsByType[enemy.type]++;
     }
+    // Splitter death → spawn 4 minis
+    if (enemy.type === 'splitter') {
+      for (var s = 0; s < 4; s++) {
+        var mini = Tower.enemy.create('mini', state.wave, 1, 1); // canvas size unused for position
+        var angle = (Math.PI * 2 / 4) * s;
+        mini.x = enemy.x + Math.cos(angle) * 30;
+        mini.y = enemy.y + Math.sin(angle) * 30;
+        state.enemies.push(mini);
+      }
+    }
+
     // Hellfire death AOE explosion
     if (enemy.type === 'hellfire') {
       var aoeR = 80, aoePct = 0.30;

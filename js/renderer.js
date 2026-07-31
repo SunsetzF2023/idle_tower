@@ -130,7 +130,34 @@ Tower.renderer = {
     for (var i = 0; i < enemies.length; i++) {
       var e = enemies[i];
       if (!e.alive) continue;
-      if (e.type === 'goblin') {
+      if (e.type === 'splitter') {
+        // Diamond shape
+        var r = e.radius;
+        ctx.beginPath();
+        ctx.moveTo(e.x, e.y - r);
+        ctx.lineTo(e.x + r, e.y);
+        ctx.lineTo(e.x, e.y + r);
+        ctx.lineTo(e.x - r, e.y);
+        ctx.closePath();
+        ctx.strokeStyle = e.color;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.fillStyle = 'rgba(125,207,255,0.1)';
+        ctx.fill();
+      } else if (e.type === 'mini') {
+        // Small triangle
+        var mr = e.radius + 3;
+        ctx.beginPath();
+        ctx.moveTo(e.x, e.y - mr);
+        ctx.lineTo(e.x + mr * 0.8, e.y + mr * 0.5);
+        ctx.lineTo(e.x - mr * 0.8, e.y + mr * 0.5);
+        ctx.closePath();
+        ctx.strokeStyle = e.color;
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        ctx.fillStyle = 'rgba(255,204,0,0.15)';
+        ctx.fill();
+      } else if (e.type === 'goblin') {
         // Gold filled circle
         ctx.beginPath();
         ctx.arc(e.x, e.y, e.radius, 0, Math.PI * 2);

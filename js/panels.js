@@ -132,7 +132,7 @@ Tower.panels = {
     html += '<div class="panel-section">';
     html += '<div class="panel-title">👾 ENEMY GUIDE</div>';
     var types = Tower.enemy.TYPES;
-    var tKeys = ['basic', 'fast', 'ranged', 'tank', 'boss', 'hellfire', 'goblin'];
+    var tKeys = ['basic', 'fast', 'ranged', 'tank', 'splitter', 'mini', 'boss', 'hellfire', 'goblin'];
     for (var i = 0; i < tKeys.length; i++) {
       var t = types[tKeys[i]];
       var baseHP = Tower.enemy.baseHP(1);
@@ -151,6 +151,8 @@ Tower.panels = {
       if (tKeys[i] === 'ranged') html += '<div style="color:var(--amber);font-size:9px">From wave 5 · 🏹 Stops at range & shoots</div>';
       if (tKeys[i] === 'tank') html += '<div style="color:var(--amber);font-size:9px">From wave 8 · 🛡 Sticks & rams tower</div>';
       if (tKeys[i] === 'hellfire') html += '<div style="color:var(--amber);font-size:9px">From wave 10 · 🔥 Ramping beam + death AOE</div>';
+      if (tKeys[i] === 'splitter') html += '<div style="color:var(--amber);font-size:9px">From wave 6 · 💎 Splits into 4 minis on death</div>';
+      if (tKeys[i] === 'mini') html += '<div style="color:var(--amber);font-size:9px">Split offspring · 🟡 Shoots yellow bullets from range</div>';
       if (tKeys[i] === 'goblin') html += '<div style="color:var(--amber);font-size:9px">All waves · 🪙 +15 coins, no damage</div>';
       html += '</div>';
     }
