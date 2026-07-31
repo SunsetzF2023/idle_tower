@@ -21,6 +21,14 @@ Tower.db = {
     if (window.supabase) {
       this._client = window.supabase.createClient(this.SUPABASE_URL, this.SUPABASE_KEY);
       this._restoreSession();
+      // Listen for auth state changes (catches OAuth callback)
+      var self = this;
+      this._client.auth.onAuthStateChange(function (event, session) {
+        if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
+          self.handleOAuthCallback();
+        }
+      });
+      // Also try immediately (for restored sessions)
       this.handleOAuthCallback();
       return true;
     }
