@@ -110,7 +110,7 @@ Tower.loop = {
 
       if (enemy.behaviour === 'ranged' && !enemy.stopped) {
         var distToTower = Tower.utils.dist(enemy.x, enemy.y, towerPos.x, towerPos.y);
-        var stopDist = stats.range;
+        var stopDist = stats.range - enemy.radius; // enemy edge tangent to range circle, inside tower range
         if (distToTower <= stopDist + enemy.speed * dt) {
           var angle = Tower.utils.angle(towerPos.x, towerPos.y, enemy.x, enemy.y);
           enemy.x = towerPos.x + Math.cos(angle) * stopDist;
