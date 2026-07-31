@@ -120,12 +120,14 @@ Tower.db = {
         self._setCachedUser({ id: user.id, name: name });
         self._saveSession();
         // Ensure players row exists
-        self._client.from('players').select('user_id').eq('user_id', user.id).maybeSingle()
-          .then(function (pr) {
-            if (!pr.data) {
-              self._client.from('players').insert({ user_id: user.id, username: name });
-            }
-          });
+        self._client.from('players').upsert(
+          { user_id: user.id, username: name, last_seen: new Date().toISOString() },
+          { onConflict: 'user_id' }
+        ).then(function (r) {
+          console.log('Tower: upsert result', r);
+        }).catch(function (e) {
+          console.error('Tower: upsert failed', JSON.stringify(e));
+        });
       }
     }).catch(function () {});
   },
