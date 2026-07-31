@@ -93,7 +93,7 @@ Tower.enemy = {
       speed: t.speed,
       hp: baseHP * t.hpMul,
       maxHp: baseHP * t.hpMul,
-      collisionDmg: t.collisionDmg,
+      collisionDmg: Math.ceil(t.collisionDmg * (1 + (wave - 1) * 0.08)),  // +8%/wave
       cash: Math.floor(t.cash * (1 + wave * 0.1)),
       coins: t.coins || 0,
       alive: true,
@@ -106,7 +106,7 @@ Tower.enemy = {
     // Ranged-specific fields
     if (t.behaviour === 'ranged') {
       enemy.attackInterval = t.attackInterval;
-      enemy.bulletDamage = t.bulletDamage;
+      enemy.bulletDamage = Math.ceil(t.bulletDamage * (1 + (wave - 1) * 0.08));  // +8%/wave
       enemy.bulletSpeed = t.bulletSpeed;
       enemy.bulletColor = t.bulletColor;
     }

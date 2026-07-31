@@ -110,7 +110,9 @@ Tower.loop = {
 
       if (enemy.behaviour === 'ranged' && !enemy.stopped) {
         var distToTower = Tower.utils.dist(enemy.x, enemy.y, towerPos.x, towerPos.y);
-        var stopDist = stats.range - enemy.radius; // enemy edge tangent to range circle, inside tower range
+        // Clamp stop distance: inside range circle, but never beyond canvas bounds
+        var maxStop = Math.min(size.w, size.h) / 2 - enemy.radius - 10;
+        var stopDist = Math.min(stats.range - enemy.radius, maxStop);
         if (distToTower <= stopDist + enemy.speed * dt) {
           var angle = Tower.utils.angle(towerPos.x, towerPos.y, enemy.x, enemy.y);
           enemy.x = towerPos.x + Math.cos(angle) * stopDist;
