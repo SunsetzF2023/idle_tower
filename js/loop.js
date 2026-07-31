@@ -311,16 +311,28 @@ Tower.loop = {
       if (!ranged._lastAttack) ranged._lastAttack = now;
       if (now - ranged._lastAttack >= (ranged.attackInterval || 2000)) {
         ranged._lastAttack = now;
+        // Hellfire ramping damage: starts low, increases over time
+        var dmg = ranged.bulletDamage || 1;
+        if (ranged.type === 'hellfire') {
+          if (!ranged.rampStart) ranged.rampStart = now;
+          var elapsed = (now - ranged.rampStart) / 1000;
+          dmg = Math.min(dmg + elapsed * (ranged.rampRate || 0.8), ranged.maxDamage || 8);
+          ranged.currentRampDmg = dmg;
+        }
+        // Hellfire beam is instant (speed 9999)
+        var isBeam = ranged.type === 'hellfire';
         state.enemyBullets.push({
           x: ranged.x,
           y: ranged.y,
           targetX: towerPos.x,
           targetY: towerPos.y,
           speed: ranged.bulletSpeed || 150,
-          damage: ranged.bulletDamage || 1,
+          damage: dmg,
           color: ranged.bulletColor || '#bb9af7',
-          radius: 2.5,
-          alive: true
+          radius: isBeam ? 1.5 : 2.5,
+          alive: true,
+          isBeam: isBeam,
+          sourceId: ranged.id
         });
       }
     }
@@ -437,16 +449,36 @@ Tower.loop = {
     if (state.killsByType[enemy.type] !== undefined) {
       state.killsByType[enemy.type]++;
     }
-    Tower.combat.spawnParticles(state, enemy);
+    // Hellfire death AOE explosion
+    if (enemy.type === 'hellfire') {
+      var aoeR = 80, aoePct = 0.30;
+      var hits = Tower.enemy.explodeAOE(enemy, state.enemies, aoeR, aoePct);
+      for (var p = 0; p < 30; p++) {
+        var a = Math.random() * Math.PI * 2;
+        var spd = Tower.utils.rand(60, 200);
+        state.particles.push({
+          x: enemy.x, y: enemy.y,
+          vx: Math.cos(a) * spd, vy: Math.sin(a) * spd,
+          life: 0.8, maxLife: 0.8,
+          radius: Tower.utils.rand(2, 5),
+          color: Math.random() < 0.5 ? '#ff4500' : '#ff8c00'
+        });
+      }
+      for (var h = 0; h < hits.length; h++) {
+        var he = hits[h].enemy;
+        Tower.combat.spawnDamageNumber(state, he.x, he.y, '💥' + hits[h].damage, '#ff4500');
+        if (he.hp <= 0) { he.alive = false; Tower.loop._onEnemyKilled(state, he); }
+      }
+    } else {
+      Tower.combat.spawnParticles(state, enemy);
+    }
 
     // Land Mine spawn chance on kill
     if (stats.landMineChance > 0 && Tower.utils.chance(stats.landMineChance / 100)) {
       var self = Tower.loop;
       self._mines.push({
-        x: enemy.x,
-        y: enemy.y,
-        radius: 18,
-        life: 60,       // 60 second lifetime
+        x: enemy.x, y: enemy.y,
+        radius: 18, life: 60,
         color: '#ff9e64'
       });
     }

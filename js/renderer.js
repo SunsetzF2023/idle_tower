@@ -173,16 +173,23 @@ Tower.renderer = {
     for (var i = 0; i < bullets.length; i++) {
       var b = bullets[i];
       if (!b.alive) continue;
-      // 外发光
-      ctx.beginPath();
-      ctx.arc(b.x, b.y, b.radius + 2, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(187,154,247,0.25)';
-      ctx.fill();
-      // 子弹本体
-      ctx.beginPath();
-      ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
-      ctx.fillStyle = b.color || '#bb9af7';
-      ctx.fill();
+      if (b.isBeam) {
+        // Hellfire beam: line from enemy to tower with glow
+        var tp = Tower.tower.position(this.canvas.width, this.canvas.height);
+        ctx.beginPath(); ctx.moveTo(b.x, b.y); ctx.lineTo(tp.x, tp.y);
+        ctx.strokeStyle = 'rgba(255,69,0,0.3)'; ctx.lineWidth = 4; ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(b.x, b.y); ctx.lineTo(tp.x, tp.y);
+        ctx.strokeStyle = 'rgba(255,140,0,0.8)'; ctx.lineWidth = 1.5; ctx.stroke();
+      } else {
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, b.radius + 2, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(187,154,247,0.25)';
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
+        ctx.fillStyle = b.color || '#bb9af7';
+        ctx.fill();
+      }
     }
   },
 

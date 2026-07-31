@@ -132,7 +132,7 @@ Tower.panels = {
     html += '<div class="panel-section">';
     html += '<div class="panel-title">👾 ENEMY GUIDE</div>';
     var types = Tower.enemy.TYPES;
-    var tKeys = ['basic', 'fast', 'ranged', 'tank', 'boss'];
+    var tKeys = ['basic', 'fast', 'ranged', 'tank', 'boss', 'hellfire'];
     for (var i = 0; i < tKeys.length; i++) {
       var t = types[tKeys[i]];
       var baseHP = Tower.enemy.baseHP(1);
@@ -150,6 +150,7 @@ Tower.panels = {
       if (tKeys[i] === 'fast') html += '<div style="color:var(--amber);font-size:9px">From wave 5</div>';
       if (tKeys[i] === 'ranged') html += '<div style="color:var(--amber);font-size:9px">From wave 5 · 🏹 Stops at range & shoots</div>';
       if (tKeys[i] === 'tank') html += '<div style="color:var(--amber);font-size:9px">From wave 8 · 🛡 Sticks & rams tower</div>';
+      if (tKeys[i] === 'hellfire') html += '<div style="color:var(--amber);font-size:9px">From wave 10 · 🔥 Ramping beam + death AOE</div>';
       html += '</div>';
     }
     html += '<div style="font-size:9px;color:var(--text);opacity:0.5">HP scales: 3 + wave × 3, then × type multiplier</div>';

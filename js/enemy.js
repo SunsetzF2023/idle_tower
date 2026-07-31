@@ -62,10 +62,27 @@ Tower.enemy = {
       speed: 12,
       hpMul: 20,
       collisionDmg: 10,
-      cash: 5,               // wiki base value
+      cash: 5,
       coins: 10,
       radius: 22,
       color: '#ff9e64'
+    },
+    hellfire: {
+      name: 'hellfire',
+      behaviour: 'ranged',    // stops at range circle, ramping beam damage
+      speed: 25,
+      hpMul: 3,
+      collisionDmg: 0,
+      cash: 5,
+      coins: 12,
+      radius: 13,
+      color: '#ff6b35',
+      attackInterval: 400,    // ms — fast ticks like Inferno Tower
+      bulletDamage: 1,        // base, ramps up
+      bulletSpeed: 9999,      // instant beam (handled in loop)
+      bulletColor: '#ff4500',
+      rampRate: 0.8,          // +0.8 damage per second
+      maxDamage: 8            // damage cap
     }
   },
 
@@ -106,9 +123,16 @@ Tower.enemy = {
     // Ranged-specific fields
     if (t.behaviour === 'ranged') {
       enemy.attackInterval = t.attackInterval;
-      enemy.bulletDamage = Math.ceil(t.bulletDamage * (1 + (wave - 1) * 0.08));  // +8%/wave
+      enemy.bulletDamage = Math.ceil(t.bulletDamage * (1 + (wave - 1) * 0.08));
       enemy.bulletSpeed = t.bulletSpeed;
       enemy.bulletColor = t.bulletColor;
+      // Hellfire ramping damage
+      if (t.name === 'hellfire') {
+        enemy.rampRate = t.rampRate;
+        enemy.maxDamage = t.maxDamage;
+        enemy.rampStart = 0;       // timestamp when started attacking current target
+        enemy.currentRampDmg = enemy.bulletDamage;
+      }
     }
 
     // Tank-specific fields
@@ -140,6 +164,22 @@ Tower.enemy = {
     enemy.x = result.x;
     enemy.y = result.y;
     return false;
+  },
+
+  /** AOE explosion — deals % of target's max HP to all enemies in radius */
+  explodeAOE: function (source, enemies, radius, pct) {
+    var hits = [];
+    for (var i = 0; i < enemies.length; i++) {
+      var e = enemies[i];
+      if (!e.alive || e.id === source.id) continue;
+      var d = Tower.utils.dist(source.x, source.y, e.x, e.y);
+      if (d <= radius) {
+        var dmg = Math.ceil(e.maxHp * pct);
+        Tower.enemy.takeDamage(e, dmg);
+        hits.push({ enemy: e, damage: dmg });
+      }
+    }
+    return hits;
   },
 
   /** Apply damage to enemy. Returns true if killed. */
@@ -175,6 +215,11 @@ Tower.enemy = {
     // Tank from wave 8
     if (wave >= 8) {
       comp.push({ type: 'tank', count: Math.max(1, Math.floor((wave - 7) * 0.4)) });
+    }
+
+    // Hellfire from wave 10
+    if (wave >= 10) {
+      comp.push({ type: 'hellfire', count: Math.max(1, Math.floor((wave - 9) * 0.5)) });
     }
 
     return comp;
