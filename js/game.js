@@ -216,6 +216,18 @@ Tower.game = {
     if (state.wave > state.bestWave) state.bestWave = state.wave;
     this._save(state);
 
+    // Submit mission progress
+    Tower.db.submitMissionProgress({
+      kill_50: state.totalKills,
+      kill_200: state.totalKills,
+      wave_5: state.wave,
+      wave_10: state.wave,
+      kill_boss: state.killsByType.boss || 0,
+      kill_tank: state.killsByType.tank || 0,
+      kill_ranged: state.killsByType.ranged || 0,
+      games_3: 1
+    }).catch(function () {});
+
     // 提交统计到 Supabase
     Tower.db.submitStats({
       bestWave: state.bestWave,

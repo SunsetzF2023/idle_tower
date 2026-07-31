@@ -300,8 +300,24 @@ Tower.db = {
   },
 
   submitMissionProgress: function (progress) {
-    // 简化处理：合并到 submitStats 时一起提交
-    return Promise.resolve();
+    if (!this._client) return Promise.reject('no client');
+    var today = new Date().toISOString().slice(0, 10);
+    var self = this;
+    return this._client.from('missions').select('*').eq('date', today).maybeSingle()
+      .then(function (r) {
+        if (!r.data) return;
+        var data = r.data.missions_data;
+        var changed = false;
+        for (var i = 0; i < data.missions.length; i++) {
+          var m = data.missions[i];
+          if (m.done || !progress[m.id]) continue;
+          m.progress = (m.progress || 0) + (progress[m.id] || 0);
+          if (m.progress >= m.target) { m.progress = m.target; m.done = true; }
+          changed = true;
+        }
+        if (!changed) return;
+        return self._client.from('missions').update({ missions_data: data }).eq('date', today);
+      });
   },
 
   claimMission: function (missionId) {
