@@ -76,6 +76,7 @@ Tower.game = {
   },
 
   switchLeftTab: function (tab) {
+    if (!this.state) return;
     var state = this.state;
     state._leftTab = tab;
     document.getElementById('left-ingame').style.display = tab === 'ingame' ? 'block' : 'none';
