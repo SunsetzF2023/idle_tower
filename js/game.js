@@ -54,6 +54,9 @@ Tower.game = {
       damageLevel: 0,
       speedLevel: 0,
       rangeLevel: 0,
+      critChanceLevel: 0,
+      healthRegenLevel: 0,
+      defensePctLevel: 0,
 
       _flashTimer: 0,
       _regenTimer: 0,
@@ -252,6 +255,9 @@ Tower.game = {
     state.damageLevel = 0;
     state.speedLevel = 0;
     state.rangeLevel = 0;
+    state.critChanceLevel = 0;
+    state.healthRegenLevel = 0;
+    state.defensePctLevel = 0;
     state.cash = Tower.tower.startingCash(state);
     state.wave = 1;
     state.waveKills = 0;

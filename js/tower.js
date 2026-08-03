@@ -51,6 +51,21 @@ Tower.tower = {
       key: 'range', name: 'Range', icon: '🎯',
       baseVal: 150, perLv: 5, costBase: 15,
       format: function (v) { return String(v) + 'px'; }
+    },
+    critChance: {
+      key: 'critChance', name: 'Crit Chance', icon: '★',
+      baseVal: 0, perLv: 2, costBase: 12,
+      format: function (v) { return (v || 0) + '%'; }
+    },
+    healthRegen: {
+      key: 'healthRegen', name: 'HP Regen', icon: '💚',
+      baseVal: 0, perLv: 0.5, costBase: 10,
+      format: function (v) { return v.toFixed(1) + '/s'; }
+    },
+    defensePct: {
+      key: 'defensePct', name: 'Defense %', icon: '🛡',
+      baseVal: 0, perLv: 1, costBase: 14,
+      format: function (v) { return (v || 0).toFixed(1) + '%'; }
     }
   },
 
@@ -368,6 +383,9 @@ Tower.tower = {
     var dmgIg = this.ingameInfo('damage', state.damageLevel || 0);
     var spdIg = this.ingameInfo('speed', state.speedLevel || 0);
     var rngIg = this.ingameInfo('range', state.rangeLevel || 0);
+    var critIg = this.ingameInfo('critChance', state.critChanceLevel || 0);
+    var regenIg = this.ingameInfo('healthRegen', state.healthRegenLevel || 0);
+    var defIg = this.ingameInfo('defensePct', state.defensePctLevel || 0);
 
     // Helper: get workshop value = base + lv × perLv
     function wsVal(key, item) {
@@ -380,7 +398,7 @@ Tower.tower = {
     var totalDamage = wsVal('damage', atk.damage) + (dmgIg ? dmgIg.value - this.INGAME.damage.baseVal : 0);
     var totalSpeed = wsVal('speed', atk.speed) + (spdIg ? spdIg.value - this.INGAME.speed.baseVal : 0);
     var totalRange = wsVal('range', atk.range) + (rngIg ? rngIg.value - this.INGAME.range.baseVal : 0);
-    var totalCrit = wsVal('critChance', atk.critChance);
+    var totalCrit = wsVal('critChance', atk.critChance) + (critIg ? critIg.value : 0);
     var totalCritFactor = wsVal('critFactor', atk.critFactor);
     var totalMs = wsVal('multishot', atk.multishot);
     var totalMsTargets = wsVal('multishotTargets', atk.multishotTargets);
@@ -395,8 +413,8 @@ Tower.tower = {
     // ── Defense stats ──
     var def = this.WORKSHOP.defense.items;
     var totalHp = wsVal('health', def.health);
-    var totalRegen = wsVal('healthRegen', def.healthRegen);
-    var totalDefPct = wsVal('defensePercent', def.defensePercent);
+    var totalRegen = wsVal('healthRegen', def.healthRegen) + (regenIg ? regenIg.value : 0);
+    var totalDefPct = wsVal('defensePercent', def.defensePercent) + (defIg ? defIg.value : 0);
     var totalDefAbs = wsVal('defenseAbsolute', def.defenseAbsolute);
     var totalThorn = wsVal('thornDamage', def.thornDamage);
     var totalLs = wsVal('lifesteal', def.lifesteal);
