@@ -60,6 +60,7 @@ Tower.game = {
 
       _flashTimer: 0,
       _regenTimer: 0,
+      _waveMod: null,       // { coins, enemyStats, enemyCount } for next wave
 
       // Resources
       cash: 0,
@@ -167,9 +168,10 @@ Tower.game = {
     Tower.panels.refreshAll(state);
   },
 
-  nextWave: function () {
+  nextWave: function (mod) {
     var state = this.state;
     if (state._current !== 'idle') return;
+    state._waveMod = mod || null;  // apply risk card for this wave
 
     var cpw = Tower.tower.getStats(state).cashPerWave;
     if (cpw > 0) state.cash += cpw;

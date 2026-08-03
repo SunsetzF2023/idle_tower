@@ -89,6 +89,7 @@ Tower.loop = {
     Tower.panels.updateWave(state);
     if (!state._lastPanelUpdate || now - state._lastPanelUpdate > 500) {
       Tower.panels.renderUpgrades(state);
+      Tower.panels.renderRiskCards(state);
       document.getElementById('wave-btn').textContent = state._current === 'idle' ? '▶ next wave' : '...fighting...';
       document.getElementById('wave-btn').disabled = state._current !== 'idle';
       state._lastPanelUpdate = now;
@@ -482,6 +483,7 @@ Tower.loop = {
     if (!canSpawn) return;
 
     var spawnRate = Tower.wave.getSpawnRate(state.wave);
+    if (state._waveMod) spawnRate *= state._waveMod.enemyCount;  // risk card: more enemies
 
     var enemyType = 'basic';
     if (self._spawnQueue.length > 0 && Tower.utils.chance(0.85)) {
@@ -491,9 +493,9 @@ Tower.loop = {
     } else if (state.wave >= 6) {
       // Mix in specials throughout the wave (not just from queue)
       var rnd = Math.random();
-      if (rnd < 0.12) enemyType = 'splitter';
-      else if (rnd < 0.20) enemyType = 'fast';
-      else if (rnd < 0.25 && state.wave >= 8) enemyType = 'tank';
+      if (rnd < 0.22) enemyType = 'splitter';
+      else if (rnd < 0.32) enemyType = 'fast';
+      else if (rnd < 0.38 && state.wave >= 8) enemyType = 'tank';
     }
 
     var aliveCount = 0;
@@ -503,6 +505,15 @@ Tower.loop = {
     if (aliveCount >= 120) return;
 
     var enemy = Tower.enemy.create(enemyType, state.wave, size.w, size.h);
+    // Apply wave modifier (risk card)
+    if (state._waveMod) {
+      var m = state._waveMod;
+      enemy.hp = Math.ceil(enemy.hp * m.enemyStats);
+      enemy.maxHp = enemy.hp;
+      enemy.collisionDmg = Math.ceil(enemy.collisionDmg * m.enemyStats);
+      enemy.bulletDamage = enemy.bulletDamage ? Math.ceil(enemy.bulletDamage * m.enemyStats) : enemy.bulletDamage;
+      enemy.cash = Math.ceil(enemy.cash * m.coins);
+    }
     state.enemies.push(enemy);
     self._spawnCount++;
   },

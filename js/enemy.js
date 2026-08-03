@@ -147,7 +147,7 @@ Tower.enemy = {
       speed: t.speed,
       hp: baseHP * t.hpMul,
       maxHp: baseHP * t.hpMul,
-      collisionDmg: Math.ceil(t.collisionDmg * (1 + (wave - 1) * 0.08)),  // +8%/wave
+      collisionDmg: Math.ceil(t.collisionDmg * (1 + (wave - 1) * 0.08)),
       cash: Math.floor(t.cash * (1 + wave * 0.1)),
       coins: t.coins || 0,
       alive: true,
@@ -252,9 +252,9 @@ Tower.enemy = {
       comp.push({ type: 'ranged', count: Math.max(1, Math.floor((wave - 4) * 0.5)) });
     }
 
-    // Splitter from wave 6
+    // Splitter from wave 6 (more frequent)
     if (wave >= 6) {
-      comp.push({ type: 'splitter', count: Math.max(1, Math.floor((wave - 5) * 0.4)) });
+      comp.push({ type: 'splitter', count: Math.max(2, Math.floor((wave - 5) * 0.8)) });
     }
 
     // Tank from wave 8
