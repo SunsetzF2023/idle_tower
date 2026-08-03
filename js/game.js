@@ -245,7 +245,7 @@ Tower.game = {
     Tower.db.submitStats({
       bestWave: state.bestWave,
       totalWaves: state.runWaves,
-      totalKills: state.totalKills,
+      totalKills: state.runKills,
       killsByType: state.killsByType,
       coins: state.coins
     }).catch(function () {});
