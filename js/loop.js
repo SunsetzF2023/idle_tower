@@ -488,6 +488,12 @@ Tower.loop = {
       enemyType = self._spawnQueue.shift();
     } else if (!Tower.utils.chance(spawnRate)) {
       return;
+    } else if (state.wave >= 6) {
+      // Mix in specials throughout the wave (not just from queue)
+      var rnd = Math.random();
+      if (rnd < 0.12) enemyType = 'splitter';
+      else if (rnd < 0.20) enemyType = 'fast';
+      else if (rnd < 0.25 && state.wave >= 8) enemyType = 'tank';
     }
 
     var aliveCount = 0;
