@@ -526,10 +526,27 @@ Tower.panels = {
     return String(str).replace(/</g, '&lt;').replace(/>/g, '&gt;');
   },
 
+  renderAchievements: function (state) {
+    var list = Tower.achievements.LIST;
+    var unlocked = Tower.achievements.load();
+    var html = '';
+    var keys = Object.keys(list);
+    for (var i = 0; i < keys.length; i++) {
+      var a = list[keys[i]];
+      var done = unlocked.indexOf(a.id) !== -1;
+      html += '<div style="' + (done ? 'color:var(--green)' : 'opacity:0.35') + '">'
+        + a.icon + ' ' + (done ? a.name : '???')
+        + (done ? '' : '<span style="font-size:8px;opacity:0.4"> (' + a.desc + ')</span>')
+        + '</div>';
+    }
+    document.getElementById('ach-container').innerHTML = html;
+  },
+
   refreshAll: function (state) {
     this.updateLeft(state);
     this.renderUpgrades(state);
     this.updateWave(state);
+    this.renderAchievements(state);
     this.renderWorkshop(state);
   }
 };
