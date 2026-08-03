@@ -204,6 +204,20 @@ Tower.renderer = {
         ctx.strokeStyle = '#00ff88';
         ctx.lineWidth = 1;
         ctx.stroke();
+      } else if (e.type === 'nexus') {
+        // Red filled square
+        var nr = e.radius;
+        ctx.fillStyle = 'rgba(255,51,51,0.3)';
+        ctx.fillRect(e.x - nr, e.y - nr, nr * 2, nr * 2);
+        ctx.strokeStyle = '#ff3333';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(e.x - nr, e.y - nr, nr * 2, nr * 2);
+        // Pulsing glow if alive
+        ctx.beginPath();
+        ctx.arc(e.x, e.y, nr + 4, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(255,51,51,0.15)';
+        ctx.lineWidth = 3;
+        ctx.stroke();
       } else if (e.type === 'goblin') {
         // Gold filled circle
         ctx.beginPath();

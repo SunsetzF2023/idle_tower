@@ -459,6 +459,49 @@ Tower.loop = {
       }
     }
 
+    // ── 6.5 Nexus: heal + spawn ──
+    for (var nx = 0; nx < state.enemies.length; nx++) {
+      var nexus = state.enemies[nx];
+      if (!nexus.alive || nexus.type !== 'nexus' || !nexus.stopped) continue;
+      var nNow = performance.now();
+      // Heal lowest-HP ally
+      if (!nexus._lastHeal) nexus._lastHeal = nNow;
+      if (nNow - nexus._lastHeal >= 2000) {
+        nexus._lastHeal = nNow;
+        var lowest = null, lowestPct = 1;
+        for (var nh = 0; nh < state.enemies.length; nh++) {
+          var nhe = state.enemies[nh];
+          if (!nhe.alive || nhe.id === nexus.id) continue;
+          var pct = nhe.hp / nhe.maxHp;
+          var nd = Tower.utils.dist(nexus.x, nexus.y, nhe.x, nhe.y);
+          if (nd <= 150 && pct < lowestPct) { lowestPct = pct; lowest = nhe; }
+        }
+        if (lowest) {
+          var healAmt = Math.ceil(lowest.maxHp * 0.15);
+          lowest.hp = Math.min(lowest.maxHp, lowest.hp + healAmt);
+          Tower.combat.spawnDamageNumber(state, lowest.x, lowest.y, '+' + healAmt, '#00ff88');
+        }
+      }
+      // Spawn basic
+      if (!nexus._lastSpawnBasic) nexus._lastSpawnBasic = nNow;
+      if (nNow - nexus._lastSpawnBasic >= 3000) {
+        nexus._lastSpawnBasic = nNow;
+        var sb = Tower.enemy.create('basic', state.wave, size.w, size.h);
+        sb.x = nexus.x + Tower.utils.rand(-20, 20);
+        sb.y = nexus.y + Tower.utils.rand(-20, 20);
+        state.enemies.push(sb);
+      }
+      // Spawn splitter
+      if (!nexus._lastSpawnSplitter) nexus._lastSpawnSplitter = nNow;
+      if (nNow - nexus._lastSpawnSplitter >= 5000) {
+        nexus._lastSpawnSplitter = nNow;
+        var ss = Tower.enemy.create('splitter', state.wave, size.w, size.h);
+        ss.x = nexus.x + Tower.utils.rand(-20, 20);
+        ss.y = nexus.y + Tower.utils.rand(-20, 20);
+        state.enemies.push(ss);
+      }
+    }
+
     // ── 7. Orbs rotation + collision ──
     if (stats.orbs > 0) {
       state._orbs = state._orbs || [];
@@ -588,6 +631,36 @@ Tower.loop = {
     if (state.killsByType[enemy.type] !== undefined) {
       state.killsByType[enemy.type]++;
     }
+    // Nexus death → red beams kill random enemies
+    if (enemy.type === 'nexus') {
+      var beams = 4 + Math.floor(Math.random() * 3); // 4-6 beams
+      for (var bm = 0; bm < beams; bm++) {
+        // Pick random alive enemy
+        var alive = [];
+        for (var ai = 0; ai < state.enemies.length; ai++) {
+          if (state.enemies[ai].alive && state.enemies[ai].id !== enemy.id) alive.push(state.enemies[ai]);
+        }
+        if (alive.length === 0) break;
+        var victim = alive[Math.floor(Math.random() * alive.length)];
+        victim.hp = 0;
+        victim.alive = false;
+        Tower.combat.spawnDamageNumber(state, victim.x, victim.y, '💀', '#ff3333');
+        Tower.combat.spawnParticles(state, victim);
+      }
+      // Big red explosion
+      for (var p = 0; p < 25; p++) {
+        var a = Math.random() * Math.PI * 2;
+        state.particles.push({
+          x: enemy.x, y: enemy.y,
+          vx: Math.cos(a) * Tower.utils.rand(50, 180),
+          vy: Math.sin(a) * Tower.utils.rand(50, 180),
+          life: 0.7, maxLife: 0.7,
+          radius: Tower.utils.rand(2, 4),
+          color: '#ff3333'
+        });
+      }
+    }
+
     // Splitter death → spawn 4 minis
     if (enemy.type === 'splitter') {
       for (var s = 0; s < 4; s++) {

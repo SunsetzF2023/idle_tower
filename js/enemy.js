@@ -136,6 +136,22 @@ Tower.enemy = {
       bulletSpeed: 250,
       bulletColor: '#00ff88'
     },
+    nexus: {
+      name: 'nexus',
+      behaviour: 'ranged',     // stays at range edge, heals + spawns
+      speed: 18,
+      hpMul: 6,                // very tanky
+      collisionDmg: 0,         // no direct attack
+      cash: 6,
+      coins: 15,
+      radius: 15,
+      color: '#ff3333',        // red square
+      healInterval: 2000,      // heal lowest-HP ally every 2s
+      healPct: 0.15,           // 15% max HP
+      healRange: 150,
+      spawnBasicInterval: 3000, // spawn basic every 3s
+      spawnSplitterInterval: 5000 // spawn splitter every 5s
+    },
     hellfire: {
       name: 'hellfire',
       behaviour: 'ranged',    // stops at range circle, ramping beam damage
@@ -297,6 +313,11 @@ Tower.enemy = {
     // Swarm from wave 8 (6-8 per wave)
     if (wave >= 8) {
       comp.push({ type: 'swarm', count: 6 + Math.floor((wave - 8) * 0.5) });
+    }
+
+    // Nexus from wave 9 (1-2 per wave)
+    if (wave >= 9) {
+      comp.push({ type: 'nexus', count: Math.max(1, Math.floor((wave - 8) * 0.3)) });
     }
 
     // Shield from wave 10
