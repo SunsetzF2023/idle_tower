@@ -186,8 +186,9 @@ Tower.loop = {
 
     // ── 3. 塔锁敌 + 攻击 ──
     // Rapid Fire check
+    var isSlowed = state._slowUntil && now < state._slowUntil;
     var isRapidFire = self._rapidFireUntil > 0 && now < self._rapidFireUntil;
-    var effectiveInterval = isRapidFire ? stats.attackInterval / 5 : stats.attackInterval;
+    var effectiveInterval = isRapidFire ? stats.attackInterval / 5 : (isSlowed ? stats.attackInterval * 2 : stats.attackInterval);
 
     var target = null;
     var closestDist = Infinity;
@@ -259,6 +260,30 @@ Tower.loop = {
           }
         }
         if (targetEnemy) {
+          // Shield absorb: spawn enemies instead of taking damage
+          if (targetEnemy.type === 'shield' && !targetEnemy.shieldBroken && targetEnemy.shieldHits > 0) {
+            targetEnemy.shieldHits--;
+            // Spawn splitter with HP based on bullet damage
+            var sp = Tower.enemy.create('splitter', state.wave, size.w, size.h);
+            sp.x = targetEnemy.x + Tower.utils.rand(-30, 30);
+            sp.y = targetEnemy.y + Tower.utils.rand(-30, 30);
+            sp.hp = stats.damage * 3;
+            sp.maxHp = sp.hp;
+            state.enemies.push(sp);
+            // Spawn doubled minis
+            for (var sm = 0; sm < 4; sm++) {
+              var mp = Tower.enemy.create('mini', state.wave, size.w, size.h);
+              var ma = (Math.PI * 2 / 4) * sm;
+              mp.x = targetEnemy.x + Math.cos(ma) * 20;
+              mp.y = targetEnemy.y + Math.sin(ma) * 20;
+              mp._lastAttack = performance.now() - mp.attackInterval;
+              state.enemies.push(mp);
+            }
+            Tower.combat.spawnDamageNumber(state, targetEnemy.x, targetEnemy.y, '🛡' + targetEnemy.shieldHits, '#ffdd57');
+            if (targetEnemy.shieldHits <= 0) targetEnemy.shieldBroken = true;
+            if (!state.bullets[k].alive) { state.bullets.splice(k, 1); }
+            continue;
+          }
           var rawDmg = stats.damage;
 
           // Damage/Meter bonus
@@ -366,6 +391,22 @@ Tower.loop = {
             Tower.game.onGameOver(state);
             return;
           }
+        } else if (ranged.type === 'shield') {
+          // Shield: volley of 3 yellow bullets
+          var volley = ranged.bulletsPerVolley || 3;
+          for (var sv = 0; sv < volley; sv++) {
+            var spreadAngle = (sv - (volley-1)/2) * 0.15;
+            var sx = ranged.x + Math.cos(spreadAngle) * (ranged.radius + 5);
+            var sy = ranged.y + Math.sin(spreadAngle) * (ranged.radius + 5);
+            state.enemyBullets.push({
+              x: sx, y: sy,
+              targetX: towerPos.x, targetY: towerPos.y,
+              speed: ranged.bulletSpeed || 200,
+              damage: ranged.bulletDamage || 1,
+              color: ranged.bulletColor || '#ffdd57',
+              radius: 2.5, alive: true
+            });
+          }
         } else {
           state.enemyBullets.push({
             x: ranged.x, y: ranged.y,
@@ -388,6 +429,10 @@ Tower.loop = {
       eb_.y = moveR.y;
       if (moveR.arrived) {
         var ebDmg = eb_.damage || 1;
+        // Swarm bullet: slow tower attack speed
+        if (eb_.color === '#00ff88' && !state._slowUntil) {
+          state._slowUntil = performance.now() + 3000; // 3s slow
+        }
         // Defense applies to enemy bullets too
         if (stats.defensePercent > 0) ebDmg = ebDmg * (1 - stats.defensePercent / 100);
         ebDmg = Math.max(1, ebDmg - stats.defenseAbsolute);

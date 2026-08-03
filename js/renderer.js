@@ -157,6 +157,53 @@ Tower.renderer = {
         ctx.stroke();
         ctx.fillStyle = 'rgba(255,204,0,0.15)';
         ctx.fill();
+      } else if (e.type === 'shield') {
+        // Hexagram (6-pointed star: two triangles)
+        var sr = e.radius;
+        for (var pass = 0; pass < 2; pass++) {
+          ctx.beginPath();
+          for (var si = 0; si < 6; si++) {
+            var sa = (Math.PI / 3) * si - Math.PI / 2 + (pass * Math.PI / 6);
+            var sx_ = e.x + sr * Math.cos(sa);
+            var sy_ = e.y + sr * Math.sin(sa);
+            if (si === 0) ctx.moveTo(sx_, sy_);
+            else ctx.lineTo(sx_, sy_);
+          }
+          ctx.closePath();
+          if (e.shieldBroken) {
+            ctx.strokeStyle = 'rgba(255,221,87,0.3)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+          } else {
+            ctx.strokeStyle = 'rgba(255,221,87,0.9)';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            ctx.fillStyle = 'rgba(255,221,87,0.1)';
+            ctx.fill();
+          }
+        }
+        // Shield indicator dots
+        if (!e.shieldBroken && e.shieldHits > 0) {
+          for (var sd = 0; sd < e.shieldHits; sd++) {
+            ctx.beginPath();
+            ctx.arc(e.x + (sd - 1) * 7, e.y - sr - 8, 3, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffdd57';
+            ctx.fill();
+          }
+        }
+      } else if (e.type === 'swarm') {
+        // Tiny green triangle
+        var tr = e.radius + 2;
+        ctx.beginPath();
+        ctx.moveTo(e.x, e.y - tr);
+        ctx.lineTo(e.x + tr * 0.7, e.y + tr * 0.5);
+        ctx.lineTo(e.x - tr * 0.7, e.y + tr * 0.5);
+        ctx.closePath();
+        ctx.fillStyle = 'rgba(0,255,136,0.3)';
+        ctx.fill();
+        ctx.strokeStyle = '#00ff88';
+        ctx.lineWidth = 1;
+        ctx.stroke();
       } else if (e.type === 'goblin') {
         // Gold filled circle
         ctx.beginPath();

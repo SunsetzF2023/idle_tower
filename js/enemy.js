@@ -104,6 +104,38 @@ Tower.enemy = {
       radius: 22,
       color: '#ff9e64'
     },
+    shield: {
+      name: 'shield',
+      behaviour: 'ranged',    // stops at range, shoots 3 yellow bullets, has shield
+      speed: 22,
+      hpMul: 2,
+      collisionDmg: 0,
+      cash: 6,
+      coins: 14,
+      radius: 14,
+      color: '#ffdd57',
+      shieldHits: 3,          // absorbs 3 tower hits before vulnerable
+      attackInterval: 1200,   // shoot 3 bullets every 1.2s
+      bulletDamage: 1,
+      bulletSpeed: 200,
+      bulletColor: '#ffdd57',
+      bulletsPerVolley: 3
+    },
+    swarm: {
+      name: 'swarm',
+      behaviour: 'ranged',    // tiny, walks to range, rapid green fire
+      speed: 45,
+      hpMul: 0.6,
+      collisionDmg: 1,
+      cash: 1,
+      coins: 3,
+      radius: 5,
+      color: '#00ff88',
+      attackInterval: 400,    // rapid fire
+      bulletDamage: 1,
+      bulletSpeed: 250,
+      bulletColor: '#00ff88'
+    },
     hellfire: {
       name: 'hellfire',
       behaviour: 'ranged',    // stops at range circle, ramping beam damage
@@ -260,6 +292,16 @@ Tower.enemy = {
     // Tank from wave 8
     if (wave >= 8) {
       comp.push({ type: 'tank', count: Math.max(1, Math.floor((wave - 7) * 0.4)) });
+    }
+
+    // Swarm from wave 8 (6-8 per wave)
+    if (wave >= 8) {
+      comp.push({ type: 'swarm', count: 6 + Math.floor((wave - 8) * 0.5) });
+    }
+
+    // Shield from wave 10
+    if (wave >= 10) {
+      comp.push({ type: 'shield', count: Math.max(1, Math.floor((wave - 9) * 0.4)) });
     }
 
     // Hellfire from wave 10
