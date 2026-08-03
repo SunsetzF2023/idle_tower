@@ -92,6 +92,7 @@ Tower.loop = {
       Tower.panels.renderRiskCards(state);
       document.getElementById('wave-btn').textContent = state._current === 'idle' ? '▶ next wave' : '...fighting...';
       document.getElementById('wave-btn').disabled = state._current !== 'idle';
+      document.getElementById('surrender-btn').style.display = state._current === 'playing' ? 'block' : 'none';
       state._lastPanelUpdate = now;
     }
   },

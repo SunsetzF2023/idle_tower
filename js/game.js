@@ -221,6 +221,36 @@ Tower.game = {
     Tower.panels.refreshAll(state);
   },
 
+  surrender: function () {
+    var state = this.state;
+    if (state._current !== 'playing') return;
+    state._current = 'idle';
+    // Save and submit stats (same as game over, but tower didn't die)
+    if (state.wave > state.bestWave) state.bestWave = state.wave;
+    this._save(state);
+    Tower.db.submitStats({
+      bestWave: state.bestWave,
+      totalWaves: state.runWaves,
+      totalKills: state.runKills,
+      killsByType: state.killsByType,
+      coins: state.coins
+    }).catch(function () {});
+    Tower.db.submitMissionProgress({
+      kill_50: state.totalKills,
+      kill_200: state.totalKills,
+      wave_5: state.wave,
+      wave_10: state.wave,
+      kill_boss: state.killsByType.boss || 0,
+      kill_tank: state.killsByType.tank || 0,
+      kill_ranged: state.killsByType.ranged || 0,
+      games_3: 1
+    }).catch(function () {});
+    Tower.achievements.check(state);
+    Tower.panels.refreshAll(state);
+    // Restart fresh
+    this.restart();
+  },
+
   onGameOver: function (state) {
     var coinBonus = Tower.economy.onDeath(state);
     if (state.wave > state.bestWave) state.bestWave = state.wave;
