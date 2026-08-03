@@ -11,7 +11,7 @@ Tower.enemy = {
       name: 'goblin',
       behaviour: 'charge',
       speed: 35,
-      hpMul: 0.5,
+      hpMul: 3,               // tanky — worth chasing
       collisionDmg: 0,
       cash: 1,
       coins: 15,
