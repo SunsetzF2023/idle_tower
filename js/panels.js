@@ -527,21 +527,23 @@ Tower.panels = {
     return String(str).replace(/</g, '&lt;').replace(/>/g, '&gt;');
   },
 
+  _riskCards: [
+    { mod: null, label: 'Safe', desc: 'Normal wave, no risk', color: 'var(--green)' },
+    { mod: { coins: 1.5, enemyStats: 1.5, enemyCount: 1.5 }, label: 'Risky', desc: '+50% coins, +50% enemy power & count', color: 'var(--amber)' },
+    { mod: { coins: 2.0, enemyStats: 2.0, enemyCount: 2.0 }, label: 'Insane', desc: '+100% coins, +100% enemy power & count', color: 'var(--red)' }
+  ],
+
   renderRiskCards: function (state) {
     var el = document.getElementById('risk-cards');
     if (!el) return;
     if (state._current !== 'idle') { el.style.display = 'none'; return; }
     el.style.display = 'block';
 
-    var cards = [
-      { mod: null, label: 'Safe', desc: 'Normal wave, no risk', color: 'var(--green)' },
-      { mod: { coins: 1.5, enemyStats: 1.5, enemyCount: 1.5 }, label: 'Risky', desc: '+50% coins, +50% enemy power & count', color: 'var(--amber)' },
-      { mod: { coins: 2.0, enemyStats: 2.0, enemyCount: 2.0 }, label: 'Insane', desc: '+100% coins, +100% enemy power & count', color: 'var(--red)' }
-    ];
+    var cards = this._riskCards;
     var html = '';
     for (var i = 0; i < cards.length; i++) {
       var c = cards[i];
-      html += '<button onclick="Tower.panels._pickCard(' + JSON.stringify(c.mod) + ')" '
+      html += '<button onclick="Tower.panels._pickCard(' + i + ')" '
         + 'style="width:100%;padding:5px;margin-bottom:3px;background:var(--bg3);border:1px solid ' + c.color + ';color:' + c.color
         + ';font-family:var(--mono);font-size:9px;cursor:pointer;text-align:left;border-radius:3px">'
         + '<b>' + c.label + '</b><br><span style="opacity:0.7;font-size:8px">' + c.desc + '</span></button>';
@@ -549,11 +551,12 @@ Tower.panels = {
     document.getElementById('risk-container').innerHTML = html;
   },
 
-  _pickCard: function (mod) {
+  _pickCard: function (idx) {
     var state = Tower.game.state;
     if (!state || state._current !== 'idle') return;
+    var card = Tower.panels._riskCards[idx];
     document.getElementById('risk-cards').style.display = 'none';
-    Tower.game.nextWave(mod);
+    Tower.game.nextWave(card ? card.mod : null);
   },
 
   renderAchievements: function (state) {
