@@ -584,6 +584,7 @@ Tower.loop = {
     var earned = Tower.economy.earnCash(state, enemy);
     state.totalKills++;
     state.waveKills++;
+    state.runKills++;
     if (state.killsByType[enemy.type] !== undefined) {
       state.killsByType[enemy.type]++;
     }

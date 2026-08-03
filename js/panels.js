@@ -59,7 +59,7 @@ Tower.panels = {
   showGameOver: function (state, coinBonus) {
     document.getElementById('game-over-overlay').classList.add('show');
     document.getElementById('go-wave').textContent = state.wave;
-    document.getElementById('go-kills').textContent = state.totalKills;
+    document.getElementById('go-kills').textContent = state.runKills;
     var existing = document.getElementById('go-coins');
     if (!existing) {
       var div = document.createElement('div');
