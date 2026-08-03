@@ -279,6 +279,12 @@ Tower.tower = {
           desc: '+4 cash per wave start. Max +596',
           unlock: 0
         },
+        autoWave: {
+          name: 'Auto Next Wave', icon: '⏭',
+          base: 0, perLv: 1, costBase: 500, maxLv: 1,
+          desc: 'Auto-start next wave after 2s rest between waves.',
+          unlock: 0
+        },
         gameSpeed: {
           name: 'Game Speed ⏩', icon: '⏩',
           base: 1.0, perLv: 1.0, costBase: 1000, maxLv: 1,
@@ -444,6 +450,7 @@ Tower.tower = {
       cashBonus: totalCashBonus,
       cashPerWave: Math.floor(totalCashWave),
       coinsPerKill: totalCpk,
+      autoWave: (ws.autoWave || 0) >= 1,
       gameSpeed: (ws.gameSpeed || 0) >= 1 ? 2.0 : 1.0,
       coinsPerWave: Math.floor(totalCoinsWave),
       freeAttackChance: Math.min(49.5, totalFreeAtk),

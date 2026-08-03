@@ -579,7 +579,7 @@ Tower.loop = {
     if (!anyAlive && this._waveElapsed >= Tower.wave.WAVE_DURATION && this._spawnQueue.length === 0) {
       state._current = 'idle';
       Tower.economy.earnCoins(state, state.wave);
-      state.totalWaves++;  // 累计波次
+      state.totalWaves++;
       if (state.wave > state.bestWave) {
         state.bestWave = state.wave;
       }
@@ -589,6 +589,15 @@ Tower.loop = {
       state.bullets = [];
       state.enemyBullets = [];
       Tower.panels.refreshAll(state);
+      // Auto-start next wave
+      var stats = Tower.tower.getStats(state);
+      if (stats.autoWave) {
+        var self = this;
+        clearTimeout(self._autoWaveTimer);
+        self._autoWaveTimer = setTimeout(function () {
+          if (state._current === 'idle') Tower.game.nextWave();
+        }, 2000);
+      }
     }
   }
 };
