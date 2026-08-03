@@ -31,17 +31,17 @@ Tower.enemy = {
     },
     mini: {
       name: 'mini',
-      behaviour: 'ranged',    // split offspring — walks to range, shoots
+      behaviour: 'ranged',    // split offspring — walks to range, rapid fire
       speed: 55,
       hpMul: 1,
       collisionDmg: 1,
       cash: 0,
       coins: 0,
       radius: 7,
-      color: '#ffcc00',       // yellow triangle
-      attackInterval: 2500,   // shoot every 2.5s
-      bulletDamage: 1,
-      bulletSpeed: 200,
+      color: '#ffcc00',
+      attackInterval: 500,    // rapid continuous fire
+      bulletDamage: 2,         // higher base, scales with wave
+      bulletSpeed: 250,
       bulletColor: '#ffcc00'
     },
     basic: {

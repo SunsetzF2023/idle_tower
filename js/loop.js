@@ -532,6 +532,7 @@ Tower.loop = {
         var angle = (Math.PI * 2 / 4) * s;
         mini.x = enemy.x + Math.cos(angle) * 30;
         mini.y = enemy.y + Math.sin(angle) * 30;
+        mini._lastAttack = performance.now() - mini.attackInterval; // fire immediately on next tick
         state.enemies.push(mini);
       }
     }
