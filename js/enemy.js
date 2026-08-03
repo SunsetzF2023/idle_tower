@@ -20,7 +20,7 @@ Tower.enemy = {
     },
     splitter: {
       name: 'splitter',
-      behaviour: 'charge',    // walks to tower, explodes into minis
+      behaviour: 'tank',      // sticks to tower, rams until killed → splits into minis
       speed: 25,
       hpMul: 4,
       collisionDmg: 4,
