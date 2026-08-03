@@ -12,14 +12,14 @@ Tower.wave = {
 
   /** Spawn Rate per wave — gentle ramp for early game */
   getSpawnRate: function (wave) {
-    // Wave 1→5: ~4%→8%, Wave 6→10: ~10%→16%, then +1%/wave cap 56%
+    // Wave 1→5: ~8%→18%, Wave 6→10: ~21%→33%, then +1.5%/wave cap 60%
     if (wave <= 5) {
-      return 0.03 + wave * 0.01;
+      return 0.06 + wave * 0.02;
     }
     if (wave <= 10) {
-      return 0.08 + (wave - 5) * 0.016;
+      return 0.18 + (wave - 5) * 0.03;
     }
-    return Math.min(0.56, 0.16 + (wave - 10) * 0.01);
+    return Math.min(0.60, 0.33 + (wave - 10) * 0.015);
   },
 
   /** 理论生成总数 */
