@@ -80,7 +80,8 @@ Tower.game = {
       totalKills: save.totalKills || 0,
       totalWaves: save.totalWaves || 0,
       killsByType: save.killsByType || { basic: 0, fast: 0, ranged: 0, tank: 0, boss: 0, hellfire: 0, goblin: 0, splitter: 0, mini: 0 },
-      runKills: 0,      // kills in this run (resets on restart/game over)
+      runKills: 0,
+      runWaves: 0,       // waves completed in this run
       waveKills: 0,
 
       // Entity pools
@@ -243,7 +244,7 @@ Tower.game = {
     // 提交统计到 Supabase
     Tower.db.submitStats({
       bestWave: state.bestWave,
-      totalWaves: state.totalWaves,
+      totalWaves: state.runWaves,
       totalKills: state.totalKills,
       killsByType: state.killsByType,
       coins: state.coins
@@ -270,6 +271,7 @@ Tower.game = {
     state.cash = Tower.tower.startingCash(state);
     state.wave = 1;
     state.runKills = 0;
+    state.runWaves = 0;
     state.waveKills = 0;
     state.enemies = [];
     state.bullets = [];

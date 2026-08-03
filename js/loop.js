@@ -717,6 +717,7 @@ Tower.loop = {
       state._current = 'idle';
       Tower.economy.earnCoins(state, state.wave);
       state.totalWaves++;
+      state.runWaves++;
       if (state.wave > state.bestWave) {
         state.bestWave = state.wave;
       }
