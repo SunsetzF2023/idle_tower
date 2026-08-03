@@ -57,6 +57,9 @@ Tower.game = {
       critChanceLevel: 0,
       healthRegenLevel: 0,
       defensePctLevel: 0,
+      maxHealthLevel: 0,
+      cashBonusLevel: 0,
+      cpkLevel: 0,
 
       _flashTimer: 0,
       _regenTimer: 0,
@@ -261,6 +264,9 @@ Tower.game = {
     state.critChanceLevel = 0;
     state.healthRegenLevel = 0;
     state.defensePctLevel = 0;
+    state.maxHealthLevel = 0;
+    state.cashBonusLevel = 0;
+    state.cpkLevel = 0;
     state.cash = Tower.tower.startingCash(state);
     state.wave = 1;
     state.runKills = 0;

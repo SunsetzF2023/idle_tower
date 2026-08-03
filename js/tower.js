@@ -66,6 +66,21 @@ Tower.tower = {
       key: 'defensePct', name: 'Defense %', icon: '🛡',
       baseVal: 0, perLv: 1, costBase: 14,
       format: function (v) { return (v || 0).toFixed(1) + '%'; }
+    },
+    maxHealth: {
+      key: 'maxHealth', name: 'Max Health', icon: '❤',
+      baseVal: 10, perLv: 10, costBase: 12,
+      format: function (v) { return String(v); }
+    },
+    cashBonus: {
+      key: 'cashBonus', name: 'Cash Bonus', icon: '💵',
+      baseVal: 1.0, perLv: 0.05, costBase: 15,
+      format: function (v) { return '×' + v.toFixed(2); }
+    },
+    cpk: {
+      key: 'cpk', name: 'Coins/Kill', icon: '🪙',
+      baseVal: 1.0, perLv: 0.05, costBase: 20,
+      format: function (v) { return '×' + v.toFixed(2); }
     }
   },
 
@@ -386,6 +401,9 @@ Tower.tower = {
     var critIg = this.ingameInfo('critChance', state.critChanceLevel || 0);
     var regenIg = this.ingameInfo('healthRegen', state.healthRegenLevel || 0);
     var defIg = this.ingameInfo('defensePct', state.defensePctLevel || 0);
+    var hpIg = this.ingameInfo('maxHealth', state.maxHealthLevel || 0);
+    var cashIg = this.ingameInfo('cashBonus', state.cashBonusLevel || 0);
+    var cpkIg = this.ingameInfo('cpk', state.cpkLevel || 0);
 
     // Helper: get workshop value = base + lv × perLv
     function wsVal(key, item) {
@@ -438,7 +456,7 @@ Tower.tower = {
 
     return {
       hp: state.towerHP,
-      maxHp: Math.floor(totalHp),
+      maxHp: Math.floor(totalHp + (hpIg ? hpIg.value - this.INGAME.maxHealth.baseVal : 0)),
       damage: Math.floor(totalDamage),
       attackSpeed: Math.min(5.95, totalSpeed),
       range: Math.floor(totalRange),
@@ -465,9 +483,9 @@ Tower.tower = {
       landMineDamage: Math.min(2100, totalMineDamage),
       deathDefy: Math.min(30, totalDeathDefy),
       healthRegen: totalRegen,
-      cashBonus: totalCashBonus,
+      cashBonus: totalCashBonus + (cashIg ? cashIg.value - this.INGAME.cashBonus.baseVal : 0),
       cashPerWave: Math.floor(totalCashWave),
-      coinsPerKill: totalCpk,
+      coinsPerKill: totalCpk + (cpkIg ? cpkIg.value - this.INGAME.cpk.baseVal : 0),
       autoWave: (ws.autoWave || 0) >= 1,
       gameSpeed: (ws.gameSpeed || 0) >= 1 ? 2.0 : 1.0,
       coinsPerWave: Math.floor(totalCoinsWave),
