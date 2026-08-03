@@ -9,7 +9,7 @@ Tower.tower = {
 
   baseStats: function () {
     return {
-      hp: 100, maxHp: 100,
+      hp: 10, maxHp: 10,
       damage: 6, attackSpeed: 1.0, range: 150,
       critChance: 0, critFactor: 1.2,
       multishotChance: 0, multishotTargets: 2,
@@ -191,8 +191,8 @@ Tower.tower = {
       items: {
         health: {
           name: 'Max Health', icon: '❤',
-          base: 100, perLv: 10, costBase: 30, maxLv: 6000,
-          desc: '+10 HP per level. Max ~6.7B',
+          base: 10, perLv: 10, costBase: 30, maxLv: 6000,
+          desc: '+10 HP per level. Base: 10. Max ~60K',
           unlock: 0
         },
         healthRegen: {
