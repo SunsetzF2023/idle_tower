@@ -255,12 +255,14 @@ Tower.db = {
         var data = r.data || [];
         var today = new Date();
         today.setHours(0, 0, 0, 0);
+        var activePlayers = data.filter(function (p) {
+          return p.last_seen && new Date(p.last_seen) >= today;
+        });
         return {
           totalPlayers: data.length,
-          activeToday: data.filter(function (p) {
-            return p.last_seen && new Date(p.last_seen) >= today;
-          }).length,
+          activeToday: activePlayers.length,
           topBestWave: data.reduce(function (m, p) { return Math.max(m, p.best_wave || 0); }, 0),
+          todayBestWave: activePlayers.reduce(function (m, p) { return Math.max(m, p.best_wave || 0); }, 0),
           totalKillsAll: data.reduce(function (s, p) { return s + (p.total_kills || 0); }, 0),
           totalWavesAll: data.reduce(function (s, p) { return s + (p.total_waves || 0); }, 0)
         };

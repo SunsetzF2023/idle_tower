@@ -382,7 +382,8 @@ Tower.panels = {
       if (!el) return;
       el.innerHTML = '<div>Players: <b style="color:var(--text-bright)">' + (data.totalPlayers||0) + '</b></div>'
         + '<div>Active today: <b style="color:var(--green)">' + (data.activeToday||0) + '</b></div>'
-        + '<div>Top best wave: <b style="color:var(--amber)">' + (data.topBestWave||0) + '</b></div>'
+        + '<div>All-time best: <b style="color:var(--amber)">wave ' + (data.topBestWave||0) + '</b></div>'
+        + '<div>Today best: <b style="color:var(--orange)">wave ' + (data.todayBestWave||0) + '</b></div>'
         + '<div>Total kills: <b style="color:var(--text-bright)">' + (data.totalKillsAll||0).toLocaleString() + '</b></div>';
     }).catch(function (err) {
       var el = document.getElementById('lb-global');
