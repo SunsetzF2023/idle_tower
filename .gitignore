@@ -5,6 +5,7 @@ Thumbs.db
 .env.*
 node_modules/
 server/data/
+docs/private/
 release/
 dist/
 *.exe
